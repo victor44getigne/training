@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Entraînements — Calcul & Mémoire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f1f5f9;
+  --panel:#ffffff;
+  --border:#dbe3ec;
+  --primary:#2563eb;
+  --primary-h:#1d4ed8;
+  --text:#0f172a;
+  --soft:#64748b;
+  --shadow:0 4px 16px rgba(15,23,42,.08);
+  --radius:18px;
+}
+* { box-sizing:border-box; margin:0; padding:0; font-family:'Inter',sans-serif; }
+body { min-height:100vh; background:var(--bg); color:var(--text); }
+#mainMenu { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:22px 16px; }
+.wrap { width:100%; max-width:900px; }
+.logo { text-align:center; font-size:clamp(30px,6vw,46px); font-weight:800; letter-spacing:-1.5px; margin-bottom:8px; }
+.logo span { color:var(--primary); }
+.tagline { text-align:center; color:var(--soft); font-weight:500; margin-bottom:28px; line-height:1.5; }
+.choiceGrid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); cursor:pointer; transition:.16s ease; text-align:left; min-height:220px; display:flex; flex-direction:column; justify-content:space-between; }
+.card:hover { transform:translateY(-2px); border-color:#bfdbfe; box-shadow:0 8px 24px rgba(37,99,235,.12); }
+.icon { font-size:42px; margin-bottom:14px; }
+.card h2 { font-size:24px; margin-bottom:10px; letter-spacing:-.5px; }
+.card p { color:var(--soft); line-height:1.55; font-size:15px; }
+.card button { margin-top:20px; width:100%; border:none; background:var(--primary); color:white; border-radius:14px; padding:15px 18px; font-weight:800; cursor:pointer; font-size:15px; }
+.card button:hover { background:var(--primary-h); }
+.note { margin-top:18px; padding:14px 16px; border-radius:14px; background:#fff; border:1px solid var(--border); color:var(--soft); font-size:14px; line-height:1.5; text-align:center; }
+#appView { display:none; min-height:100vh; }
+.topBar { position:sticky; top:0; z-index:10; background:rgba(241,245,249,.94); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.backBtn { border:1px solid var(--border); background:#fff; color:var(--text); border-radius:12px; padding:11px 14px; font-weight:800; cursor:pointer; }
+.backBtn:hover { border-color:var(--primary); color:var(--primary); }
+.appTitle { flex:1; text-align:center; color:var(--soft); font-size:13px; font-weight:700; }
+#appFrame { width:100%; height:calc(100vh - 57px); border:0; display:block; background:white; }
+@media(max-width:720px) {
+  .choiceGrid { grid-template-columns:1fr; }
+  .card { min-height:auto; }
+  #mainMenu { align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<main id="mainMenu">
+  <div class="wrap">
+    <div class="logo">MES <span>ENTRAÎNEMENTS</span></div>
+    <div class="tagline">Choisis le programme que tu veux lancer.</div>
+    <div class="choiceGrid">
+      <article class="card" onclick="openTraining('math')">
+        <div>
+          <div class="icon">⚡</div>
+          <h2>Calcul mental</h2>
+          <p>Entraînement avec additions, soustractions, multiplications et divisions. Score, erreurs, passes et tableau des scores.</p>
+        </div>
+        <button type="button">Lancer Calcul mental</button>
+      </article>
+      <article class="card" onclick="openTraining('memory')">
+        <div>
+          <div class="icon">🧠</div>
+          <h2>Mémoire additive</h2>
+          <p>Des nombres apparaissent à l’écran : retiens-les, additionne-les, puis vérifie la somme avec le détail du calcul.</p>
+        </div>
+        <button type="button">Lancer Mémoire additive</button>
+      </article>
+    </div>
+    <div class="note">Pour GitHub Pages, renomme ce fichier en <strong>index.html</strong> et publie-le comme page principale.</div>
+  </div>
+</main>
+
+<section id="appView">
+  <div class="topBar">
+    <button class="backBtn" onclick="backToMain()">← Choix des entraînements</button>
+    <div class="appTitle" id="appTitle">Entraînement</div>
+    <div style="width:170px"></div>
+  </div>
+  <iframe id="appFrame" title="Entraînement sélectionné"></iframe>
+</section>
+
+<template id="tplMath">
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<title>MathBlitz — Calcul Mental</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #f1f5f9;
+  --panel:       #ffffff;
+  --border:      #e2e8f0;
+  --border-f:    #bfdbfe;
+  --primary:     #2563eb;
+  --primary-h:   #1d4ed8;
+  --primary-lt:  #dbeafe;
+  --primary-xlt: #eff6ff;
+  --success:     #16a34a;
+  --success-lt:  #dcfce7;
+  --danger:      #dc2626;
+  --danger-lt:   #fee2e2;
+  --warning:     #d97706;
+  --purple:      #7c3aed;
+  --text:        #0f172a;
+  --soft:        #64748b;
+  --xsoft:       #94a3b8;
+  --sh:          0 1px 3px rgba(15,23,42,.07),0 1px 2px rgba(15,23,42,.05);
+  --sh2:         0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.05);
+  --r: 14px; --rs: 10px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100%;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px 48px;}
+
+/* SCREENS */
+.screen{display:none;width:100%;max-width:680px;animation:fu .2s ease;}
+.screen.active{display:block;}
+@keyframes fu{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* LOGO */
+.logo{font-size:clamp(30px,6vw,44px);font-weight:800;text-align:center;letter-spacing:-1.5px;margin-bottom:6px;}
+.logo span{color:var(--primary);}
+.tagline{text-align:center;color:var(--soft);font-size:14px;font-weight:500;margin-bottom:28px;}
+
+/* PANELS */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:22px 20px;margin-bottom:14px;box-shadow:var(--sh);}
+.pt{font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;}
+
+/* DURATION */
+.dur-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.pill{border:1.5px solid var(--border);background:var(--panel);color:var(--soft);border-radius:var(--rs);padding:10px 4px;cursor:pointer;transition:all .15s;font-size:12px;font-weight:600;text-align:center;line-height:1.35;font-family:'Inter',sans-serif;}
+.pill:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-xlt);}
+.pill.active{background:var(--primary-lt);border-color:var(--border-f);color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+
+/* LEVEL */
+.lv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:480px){.lv-grid{grid-template-columns:repeat(2,1fr);}}
+.lv-btn{border:1.5px solid var(--border);background:var(--panel);border-radius:var(--r);padding:16px 8px;cursor:pointer;transition:all .15s;text-align:center;font-family:'Inter',sans-serif;}
+.lv-btn:hover{border-color:var(--primary);background:var(--primary-xlt);}
+.lv-btn.active{background:var(--primary-lt);border-color:var(--border-f);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.lv-num{display:block;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.lv-desc{font-size:11px;font-weight:500;color:var(--soft);line-height:1.5;}
+.lv-btn.active .lv-num{color:var(--primary);}
+.lv-btn.active .lv-desc{color:var(--primary);opacity:.7;}
+
+/* OPS */
+.ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:400px){.ops-grid{grid-template-columns:1fr;}}
+.ci{display:flex;align-items:center;gap:12px;border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:all .15s;user-select:none;}
+.ci:hover{border-color:var(--primary);background:var(--primary-xlt);}
+.ci.checked{background:var(--primary-lt);border-color:var(--border-f);}
+.cb{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;transition:all .15s;color:transparent;}
+.ci.checked .cb{border-color:var(--primary);background:var(--primary);color:white;}
+.ops{font-size:20px;font-weight:700;color:var(--soft);}
+.ci.checked .ops{color:var(--primary);}
+.cl{font-size:14px;font-weight:600;color:var(--soft);}
+.ci.checked .cl{color:var(--primary);}
+.err-msg{font-size:13px;font-weight:600;color:var(--danger);margin-top:12px;display:none;align-items:center;gap:6px;}
+.err-msg.show{display:flex;}
+
+/* DEC PILLS */
+.dec-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+/* BUTTONS */
+.btn-p{width:100%;border:none;background:var(--primary);color:white;border-radius:var(--r);padding:17px 24px;cursor:pointer;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;transition:all .15s;box-shadow:0 4px 12px rgba(37,99,235,.2);margin-top:6px;letter-spacing:.2px;}
+.btn-p:hover{background:var(--primary-h);box-shadow:0 6px 20px rgba(37,99,235,.3);transform:translateY(-1px);}
+.btn-p:active{transform:translateY(0);}
+.btn-g{border:1.5px solid var(--border);background:var(--panel);color:var(--text);border-radius:var(--r);padding:14px 20px;cursor:pointer;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s;box-shadow:var(--sh);}
+.btn-g:hover{border-color:var(--danger);color:var(--danger);background:#fff5f5;}
+.btn-o{border:1.5px solid var(--border);background:var(--panel);color:var(--soft);border-radius:var(--rs);padding:10px 16px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s;}
+.btn-o:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-xlt);}
+
+/* TIMER */
+.t-track{width:100%;height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:16px;}
+.t-fill{height:100%;background:var(--primary);border-radius:99px;transition:width 1s linear,background .5s;}
+.t-fill.hot{background:var(--danger);}
+
+/* HUD */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:14px;box-shadow:var(--sh);}
+.hc{text-align:center;}
+.hl{font-size:11px;font-weight:600;color:var(--xsoft);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;}
+.hv{font-size:clamp(18px,4vw,26px);font-weight:800;color:var(--text);}
+.hv.clk{color:var(--primary);}
+.hv.clk.hot{color:var(--danger);animation:bl .5s step-end infinite;}
+@keyframes bl{50%{opacity:.2;}}
+
+/* QUESTION */
+.q-box{background:var(--panel);border:1.5px solid var(--border);border-radius:20px;padding:48px 24px;text-align:center;margin-bottom:16px;box-shadow:var(--sh2);position:relative;overflow:hidden;min-height:140px;display:flex;align-items:center;justify-content:center;}
+.q-txt{font-size:clamp(36px,8vw,64px);font-weight:800;letter-spacing:-2px;color:var(--text);line-height:1;}
+.q-txt .op{color:var(--primary);}
+.q-txt .eq{color:var(--xsoft);}
+.flash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,5vw,30px);font-weight:800;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .1s;padding:12px;text-align:center;line-height:1.5;letter-spacing:-1px;}
+.flash.ok{color:var(--success);background:rgba(22,163,74,.06);}
+.flash.bad{color:var(--danger);background:rgba(220,38,38,.06);}
+.flash.show{opacity:1;}
+
+/* ANSWER */
+.ans-row{display:flex;gap:10px;margin-bottom:12px;}
+.ans-inp{flex:1;border:2px solid var(--border);border-radius:var(--r);padding:18px 16px;font-size:clamp(20px,4vw,28px);font-weight:700;font-family:'Inter',sans-serif;text-align:center;outline:none;transition:all .15s;color:var(--text);-moz-appearance:textfield;}
+.ans-inp::-webkit-inner-spin-button,.ans-inp::-webkit-outer-spin-button{-webkit-appearance:none;}
+.ans-inp:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.1);}
+.ans-inp.ok{border-color:var(--success);box-shadow:0 0 0 4px rgba(22,163,74,.1);}
+.ans-inp.bad{border-color:var(--danger);box-shadow:0 0 0 4px rgba(220,38,38,.1);animation:sk .28s ease;}
+@keyframes sk{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+.btn-ok{border:none;background:var(--primary);color:white;border-radius:var(--r);padding:0 22px;cursor:pointer;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;transition:all .15s;min-width:72px;box-shadow:0 4px 12px rgba(37,99,235,.2);}
+.btn-ok:hover{background:var(--primary-h);}
+
+/* BOTTOM BAR */
+.bot-bar{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;box-shadow:var(--sh);}
+.sw{display:flex;align-items:center;gap:10px;}
+.sl{font-size:12px;font-weight:600;color:var(--soft);}
+.dots{display:flex;gap:6px;}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--border);transition:all .2s;}
+.dot.lit{background:var(--warning);box-shadow:0 0 6px rgba(217,119,6,.35);}
+
+/* END */
+.sc-big{font-size:clamp(56px,13vw,80px);font-weight:800;color:var(--primary);text-align:center;letter-spacing:-3px;margin:12px 0 4px;animation:pi .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes pi{from{transform:scale(.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+.sc-sub{text-align:center;color:var(--soft);font-size:15px;font-weight:500;margin-bottom:20px;}
+.stats{display:flex;gap:10px;margin-bottom:14px;}
+@media(max-width:400px){.stats{flex-wrap:wrap;}.stats .sc{flex:0 0 calc(50% - 5px);}}
+.sc{flex:1;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:16px 10px;text-align:center;box-shadow:var(--sh);}
+.sv{display:block;font-size:clamp(20px,4vw,28px);font-weight:800;color:var(--primary);margin-bottom:4px;}
+.sl2{font-size:11px;font-weight:600;color:var(--xsoft);text-transform:uppercase;letter-spacing:.5px;}
+.nm-inp{width:100%;border:2px solid var(--border);border-radius:var(--r);padding:16px;font-size:17px;font-weight:700;font-family:'Inter',sans-serif;margin-bottom:12px;outline:none;text-align:center;letter-spacing:1px;text-transform:uppercase;transition:border-color .15s;color:var(--text);}
+.nm-inp::placeholder{color:var(--xsoft);font-weight:500;letter-spacing:.5px;text-transform:none;}
+.nm-inp:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.1);}
+.end-act{display:flex;gap:10px;margin-top:14px;}
+.end-act .btn-p{margin:0;}
+
+/* REVIEW */
+.rv-list{display:flex;flex-direction:column;gap:10px;}
+.rv-card{background:var(--panel);border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);}
+.rv-q{font-size:clamp(18px,4vw,24px);font-weight:800;color:var(--text);letter-spacing:-1px;margin-bottom:12px;}
+.rv-q .op{color:var(--primary);}
+.rv-q .eq{color:var(--xsoft);}
+.rv-ans{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;}
+.chip.given{background:var(--danger-lt);color:var(--danger);}
+.chip.correct{background:var(--success-lt);color:var(--success);}
+.chip.skipped{background:var(--border);color:var(--soft);}
+.rv-empty{text-align:center;padding:40px 20px;font-size:16px;font-weight:600;color:var(--success);background:var(--success-lt);border-radius:var(--r);}
+
+/* LEADERBOARD */
+.lb-h,.lb-r{display:grid;grid-template-columns:48px 1fr 72px 80px;gap:8px;align-items:center;}
+.lb-h{padding:6px 12px 10px;font-size:11px;font-weight:600;color:var(--xsoft);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+.lb-h span:nth-child(3),.lb-h span:nth-child(4){text-align:right;}
+.lb-r{padding:11px 12px;border-radius:var(--rs);transition:background .1s;}
+.lb-r:hover{background:var(--primary-xlt);}
+.lb-r.hl{background:var(--primary-lt);border:1px solid var(--border-f);}
+.rk{font-size:14px;font-weight:700;color:var(--soft);}
+.rk.g1{color:#d97706;}.rk.g2{color:#64748b;}.rk.g3{color:#92400e;}
+.ln{font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ls{font-size:15px;font-weight:800;color:var(--primary);text-align:right;}
+.ld{font-size:12px;font-weight:500;color:var(--soft);text-align:right;}
+.lb-empty{padding:24px;text-align:center;color:var(--xsoft);font-size:14px;font-weight:500;}
+
+/* PAUSE */
+.pov{display:none;position:fixed;inset:0;background:rgba(241,245,249,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.pov.on{display:flex;}
+.pt2{font-size:clamp(28px,7vw,42px);font-weight:800;color:var(--text);letter-spacing:-1px;}
+.ps{font-size:14px;font-weight:500;color:var(--soft);margin-bottom:6px;}
+
+@media(max-width:520px){
+  body{padding:16px 12px 40px;}
+  .panel{padding:18px 16px;}
+  .ans-row{gap:8px;}
+  .btn-ok{padding:0 14px;min-width:58px;font-size:13px;}
+}
+</style>
+</head>
+<body>
+
+<!-- PAUSE -->
+<div class="pov" id="pov">
+  <div class="pt2">⏸ Pause</div>
+  <div class="ps">La session est en attente</div>
+  <button class="btn-p" style="width:240px;margin:0" onclick="resumeGame()">▶ Reprendre</button>
+  <button class="btn-g" style="width:240px" onclick="quitToEnd()">✕ Terminer la session</button>
+</div>
+
+<!-- ═══ MENU ═══ -->
+<div class="screen active" id="sMenu">
+  <div class="logo">Math<span>Blitz</span></div>
+  <div class="tagline">Entraînement Calcul Mental</div>
+
+  <div class="panel">
+    <div class="pt">⏱ Durée de la session</div>
+    <div class="dur-grid" id="durGrid">
+      <button class="pill" data-v="60">1<br>min</button>
+      <button class="pill active" data-v="120">2<br>min</button>
+      <button class="pill" data-v="180">3<br>min</button>
+      <button class="pill" data-v="240">4<br>min</button>
+      <button class="pill" data-v="300">5<br>min</button>
+      <button class="pill" data-v="360">6<br>min</button>
+      <button class="pill" data-v="420">7<br>min</button>
+      <button class="pill" data-v="480">8<br>min</button>
+      <button class="pill" data-v="540">9<br>min</button>
+      <button class="pill" data-v="600">10<br>min</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">⚡ Niveau de difficulté</div>
+    <div class="lv-grid" id="lvGrid">
+      <button class="lv-btn active" data-v="1"><span class="lv-num">1</span><span class="lv-desc">Débutant<br>1 – 10</span></button>
+      <button class="lv-btn" data-v="2"><span class="lv-num">2</span><span class="lv-desc">Intermédiaire<br>1 – 50</span></button>
+      <button class="lv-btn" data-v="3"><span class="lv-num">3</span><span class="lv-desc">Avancé<br>1 – 100</span></button>
+      <button class="lv-btn" data-v="4"><span class="lv-num">4</span><span class="lv-desc">Expert<br>1 – 999</span></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">🎯 Opérations</div>
+    <div class="ops-grid">
+      <div class="ci checked" data-op="add"><div class="cb">✓</div><div class="cl"><span class="ops">+&nbsp;</span>Addition</div></div>
+      <div class="ci checked" data-op="sub"><div class="cb">✓</div><div class="cl"><span class="ops">−&nbsp;</span>Soustraction</div></div>
+      <div class="ci" data-op="mul"><div class="cb"></div><div class="cl"><span class="ops">×&nbsp;</span>Multiplication</div></div>
+      <div class="ci" data-op="div"><div class="cb"></div><div class="cl"><span class="ops">÷&nbsp;</span>Division</div></div>
+    </div>
+    <div class="err-msg" id="opsErr">⚠ Sélectionne au moins une opération !</div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">🔢 Nombres décimaux</div>
+    <div style="font-size:13px;font-weight:500;color:var(--soft);">Chiffres après la virgule :</div>
+    <div class="dec-row" id="decGrid">
+      <button class="pill active" data-v="0">Aucun<br>(entiers)</button>
+      <button class="pill" data-v="1">1<br>décimale</button>
+      <button class="pill" data-v="2">2<br>décimales</button>
+      <button class="pill" data-v="mix">Mixte<br>(0, 1 ou 2)</button>
+    </div>
+  </div>
+
+  <button class="btn-p" onclick="startGame()">▶ Lancer la session</button>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div class="screen" id="sGame">
+  <div class="t-track"><div class="t-fill" id="tFill"></div></div>
+  <div class="hud">
+    <div class="hc"><div class="hl">Score</div><div class="hv" id="hScore">0</div></div>
+    <div class="hc"><div class="hl">Temps</div><div class="hv clk" id="hClock">0:00</div></div>
+    <div class="hc"><div class="hl">Tentatives</div><div class="hv" id="hTotal">0</div></div>
+    <button class="btn-o" onclick="pauseGame()">⏸ Pause</button>
+  </div>
+  <div class="q-box">
+    <div class="q-txt" id="qTxt">…</div>
+    <div class="flash" id="flashEl"></div>
+  </div>
+  <div class="ans-row">
+    <input class="ans-inp" type="number" id="ansInp" placeholder="?" autocomplete="off" inputmode="decimal" onkeydown="onKey(event)">
+    <button class="btn-ok" onclick="validate()">OK ↵</button>
+  </div>
+  <div class="bot-bar">
+    <div class="sw">
+      <span class="sl">Série :</span>
+      <div class="dots" id="dotRow">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+    <button class="btn-o" onclick="skipQ()">Passer →</button>
+  </div>
+</div>
+
+<!-- ═══ END ═══ -->
+<div class="screen" id="sEnd">
+  <div class="logo" style="font-size:clamp(22px,5vw,32px);margin-bottom:4px">Session terminée</div>
+  <div class="tagline" style="margin-bottom:0">Voici tes résultats</div>
+  <div class="sc-big" id="eSc">0</div>
+  <div class="sc-sub" id="eSub">0 bonne réponse</div>
+  <div class="stats">
+    <div class="sc"><span class="sv" id="eTot">0</span><span class="sl2">Tentatives</span></div>
+    <div class="sc"><span class="sv" id="ePct">0%</span><span class="sl2">Précision</span></div>
+    <div class="sc"><span class="sv" id="eWrg">0</span><span class="sl2">Erreurs</span></div>
+  </div>
+
+  <button id="btnRev"
+    style="display:block;width:100%;border:none;background:var(--purple);color:white;border-radius:var(--r);padding:15px 24px;cursor:pointer;font-size:14px;font-weight:700;font-family:Inter,sans-serif;transition:all .15s;box-shadow:0 4px 12px rgba(124,58,237,.2);margin-bottom:14px"
+    onclick="showReview()">
+    🔍 Revoir les erreurs &amp; les passes
+  </button>
+
+  <div class="panel">
+    <div class="pt">🏆 Enregistrer le score</div>
+    <input class="nm-inp" type="text" id="nmInp" placeholder="Ton prénom / pseudo" maxlength="14" onkeydown="if(event.key==='Enter') saveScore()">
+    <button class="btn-p" style="margin-top:0" onclick="saveScore()">Enregistrer</button>
+  </div>
+
+  <div class="panel">
+    <div class="pt">🥇 Tableau des scores</div>
+    <div class="lb-h"><span>#</span><span>Nom</span><span style="text-align:right">Score</span><span style="text-align:right">Date</span></div>
+    <div id="lbRows"></div>
+  </div>
+
+  <div class="end-act">
+    <button class="btn-p" onclick="goMenu()">↩ Menu</button>
+    <button class="btn-g" onclick="clearLB()">🗑 Effacer</button>
+  </div>
+</div>
+
+<!-- ═══ REVIEW ═══ -->
+<div class="screen" id="sRev">
+  <div class="logo" style="font-size:clamp(20px,5vw,30px);margin-bottom:4px">Bilan des erreurs</div>
+  <div class="tagline" style="margin-bottom:20px">Questions ratées ou passées</div>
+  <div class="rv-list" id="rvList"></div>
+  <button class="btn-p" style="margin-top:20px" onclick="showEnd()">↩ Retour aux résultats</button>
+</div>
+
+<script>
+/* ── CONFIG ── */
+var cfg = { duration:120, level:1, ops:{add:true,sub:true,mul:false,div:false}, decimals:0 };
+
+/* ── STATE ── */
+var timer=null, timeLeft=0, totalTime=0;
+var score=0, totalQ=0, streak=0;
+var curAns=null, curQ='', curDec=0;
+var isPaused=false, saved=false, hlRow=-1;
+var wrongLog=[];
+var lvMax={1:10,2:50,3:100,4:999};
+
+/* ── MENU BINDINGS ── */
+(function(){
+  document.querySelectorAll('#durGrid .pill').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#durGrid .pill').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active'); cfg.duration=parseInt(b.dataset.v);
+    });
+  });
+  document.querySelectorAll('#lvGrid .lv-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#lvGrid .lv-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active'); cfg.level=parseInt(b.dataset.v);
+    });
+  });
+  document.querySelectorAll('.ci').forEach(function(item){
+    item.addEventListener('click',function(){
+      var on=item.classList.toggle('checked');
+      item.querySelector('.cb').textContent=on?'✓':'';
+      cfg.ops[item.dataset.op]=on;
+      document.getElementById('opsErr').classList.remove('show');
+    });
+  });
+  document.querySelectorAll('#decGrid .pill').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#decGrid .pill').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      cfg.decimals=b.dataset.v==='mix'?'mix':parseInt(b.dataset.v);
+    });
+  });
+})();
+
+/* ── HELPERS ── */
+function rnd(mn,mx,d){var n=Math.random()*(mx-mn)+mn;return d===0?Math.round(n):parseFloat(n.toFixed(d));}
+function rd(n,d){return parseFloat(n.toFixed(d));}
+function fmt(n,d){return d===0?String(n):n.toFixed(d).replace('.',',');}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+/* ── QUESTION ── */
+function newQ(){
+
+  var acts = Object.keys(cfg.ops).filter(function(k){
+    return cfg.ops[k];
+  });
+
+  var op = acts[Math.floor(Math.random()*acts.length)];
+
+  var d = cfg.decimals === 'mix'
+    ? [0,1,2][Math.floor(Math.random()*3)]
+    : cfg.decimals;
+
+  curDec = d;
+
+  var mx = lvMax[cfg.level];
+
+  var a, b, ans, sym;
+
+  // décimales affichées réelles
+  var displayDA = d;
+  var displayDB = d;
+
+  switch(op){
+
+    case 'add':
+      a = rnd(1,mx,d);
+      b = rnd(1,mx,d);
+      ans = rd(a+b,d);
+      sym = '+';
+      break;
+
+    case 'sub':
+      a = rnd(1,mx,d);
+      b = rnd(0,a,d);
+      ans = rd(a-b,d);
+      sym = '−';
+      break;
+
+    case 'mul': {
+
+      var cm = d>0 ? 20 : Math.min(mx,50);
+
+      a = rnd(1,cm,d);
+      b = rnd(1,Math.min(12,cm),0);
+
+      ans = rd(a*b,d);
+
+      sym = '×';
+
+      break;
+    }
+
+    case 'div': {
+
+      // décimales indépendantes
+      var dA = cfg.decimals === 'mix'
+        ? [0,1,2][Math.floor(Math.random()*3)]
+        : cfg.decimals;
+
+      var dB = cfg.decimals === 'mix'
+        ? [0,1,2][Math.floor(Math.random()*3)]
+        : cfg.decimals;
+
+      displayDA = dA;
+      displayDB = dB;
+
+      // diviseur
+      b = rnd(1, Math.min(12,mx), dB);
+
+      // résultat cible EXACT à 2 décimales
+      var res = Math.floor(rnd(1,30,4) * 100) / 100;
+
+      // dividende exact
+      a = res * b;
+
+      // affichage propre
+      a = rd(a, dA);
+
+      // réponse attendue
+      ans = Math.floor((a / b) * 100) / 100;
+
+      sym = '÷';
+
+
+      break;
+    }
+  }
+
+  // précision d'affichage
+  var da = op === 'div' ? displayDA : d;
+  var db = op === 'div' ? displayDB : d;
+
+  curAns = ans;
+
+  curQ = fmt(a, da) + ' ' + sym + ' ' + fmt(b, db);
+
+  document.getElementById('qTxt').innerHTML =
+    fmt(a, da) +
+    ' <span class="op">' + sym + '</span> ' +
+    fmt(b, db) +
+    ' <span class="eq">=</span>';
+}
+
+/* ── GAME ── */
+function startGame(){
+  if(!Object.values(cfg.ops).some(Boolean)){
+    document.getElementById('opsErr').classList.add('show'); return;
+  }
+  score=0;totalQ=0;streak=0;
+  timeLeft=cfg.duration;totalTime=cfg.duration;
+  saved=false;hlRow=-1;wrongLog=[];
+  showS('sGame');updateHUD();newQ();resetInp();focusInp();
+  clearInterval(timer);
+  timer=setInterval(tick,1000);
+}
+function tick(){
+  if(isPaused)return;
+  timeLeft--;updateBar();updateHUD();
+  if(timeLeft<=0)endGame();
+}
+function updateBar(){
+  var p=(timeLeft/totalTime)*100;
+  var f=document.getElementById('tFill');
+  f.style.width=p+'%';
+  var hot=timeLeft<=15;
+  f.classList.toggle('hot',hot);
+  document.getElementById('hClock').classList.toggle('hot',hot);
+}
+function updateHUD(){
+  document.getElementById('hScore').textContent=score;
+  document.getElementById('hTotal').textContent=totalQ;
+  var m=Math.floor(timeLeft/60),s=String(timeLeft%60).padStart(2,'0');
+  document.getElementById('hClock').textContent=m+':'+s;
+}
+function onKey(e){if(e.key==='Enter')validate();}
+function validate(){
+  var raw=document.getElementById('ansInp').value.replace(',','.').trim();
+  if(raw==='')return;
+  var v = Math.floor(parseFloat(raw) * 100) / 100;
+  if(isNaN(v))return;
+  totalQ++;
+  var tol;
+    if(curQ.includes('÷')) {
+      tol = 0.005; // tolérance fixe 2 décimales
+    }else {
+      tol = curDec>0 ? Math.pow(10,-curDec)*0.5001 : 0.0001;
+    }
+  var ok=Math.abs(v-curAns)<=tol;
+  var inp=document.getElementById('ansInp');
+  var fl=document.getElementById('flashEl');
+  if(ok){
+    score++;streak=Math.min(streak+1,5);
+    inp.classList.add('ok');fl.textContent='✓';fl.className='flash ok show';
+  }else{
+    wrongLog.push({q:curQ,given:String(v).replace('.',','),correct:fmt(curAns,curDec),skipped:false});
+    streak=0;inp.classList.add('bad');
+    fl.textContent='✗  Réponse : '+fmt(curAns,curDec);fl.className='flash bad show';
+  }
+  updateStreak();updateHUD();
+  setTimeout(function(){
+    fl.className='flash';inp.classList.remove('ok','bad');
+    resetInp();newQ();focusInp();
+  },420);
+}
+function skipQ(){
+  wrongLog.push({q:curQ,given:'—',correct:fmt(curAns,curDec),skipped:true});
+  streak=0;updateStreak();newQ();resetInp();focusInp();
+}
+function updateStreak(){
+  document.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('lit',i<streak);});
+}
+function resetInp(){var i=document.getElementById('ansInp');i.value='';i.classList.remove('ok','bad');}
+function focusInp(){setTimeout(function(){document.getElementById('ansInp').focus();},50);}
+
+/* ── PAUSE ── */
+function pauseGame(){isPaused=true;document.getElementById('pov').classList.add('on');}
+function resumeGame(){isPaused=false;document.getElementById('pov').classList.remove('on');focusInp();}
+function quitToEnd(){clearInterval(timer);isPaused=false;document.getElementById('pov').classList.remove('on');endGame();}
+
+/* ── END ── */
+function endGame(){
+  clearInterval(timer);
+  isPaused=false;
+  document.getElementById('pov').classList.remove('on');
+
+  var pct=totalQ>0?Math.round(score/totalQ*100):0;
+  var missed=wrongLog.length;
+
+  document.getElementById('eSc').textContent=score;
+  document.getElementById('eSub').textContent=score+' bonne'+(score>1?'s':'')+' réponse'+(score>1?'s':'');
+  document.getElementById('eTot').textContent=totalQ;
+  document.getElementById('ePct').textContent=pct+'%';
+  document.getElementById('eWrg').textContent=missed;
+
+  var btnRev=document.getElementById('btnRev');
+  btnRev.style.display='block';
+  btnRev.disabled=false;
+  btnRev.style.opacity='1';
+  btnRev.style.cursor='pointer';
+  btnRev.textContent = missed>0
+    ? '🔍 Revoir les erreurs & les passes ('+missed+')'
+    : '🎉 Voir le bilan : aucune erreur ni passe';
+
+  document.getElementById('nmInp').value='';
+  showS('sEnd');renderLB();
+  setTimeout(function(){document.getElementById('nmInp').focus();},120);
+}
+
+/* ── REVIEW ── */
+function showReview(){
+  var list=document.getElementById('rvList');
+  if(!wrongLog.length){
+    list.innerHTML='<div class="rv-empty">🎉 Aucune erreur — bravo !</div>';
+    showS('sRev'); return;
+  }
+  list.innerHTML=wrongLog.map(function(w){
+    var qh=esc(w.q)
+      .replace(/\+/g,'<span class="op">+</span>')
+      .replace(/−/g,'<span class="op">−</span>')
+      .replace(/×/g,'<span class="op">×</span>')
+      .replace(/÷/g,'<span class="op">÷</span>');
+    var gc=w.skipped
+      ? '<span class="chip skipped">— Passé</span>'
+      : '<span class="chip given">✗ Ta réponse : <strong>'+esc(w.given)+'</strong></span>';
+    var cc='<span class="chip correct">✓ Réponse : <strong>'+esc(w.correct)+'</strong></span>';
+    return '<div class="rv-card"><div class="rv-q">'+qh+' <span class="eq">=</span></div><div class="rv-ans">'+gc+cc+'</div></div>';
+  }).join('');
+  showS('sRev');
+}
+function showEnd(){showS('sEnd');}
+
+/* ── LEADERBOARD ── */
+function getScores(){try{return JSON.parse(localStorage.getItem('mb3')||'[]');}catch(e){return[];}}
+function putScores(a){try{localStorage.setItem('mb3',JSON.stringify(a));}catch(e){}}
+function saveScore(){
+  if(saved){renderLB();return;}
+  var name=(document.getElementById('nmInp').value.trim()||'Anonyme').slice(0,14);
+  var sc=getScores();
+  var e={name:name,score:score,total:totalQ,pct:totalQ>0?Math.round(score/totalQ*100):0,
+    date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})};
+  sc.push(e);sc.sort(function(a,b){return b.score-a.score||b.pct-a.pct;});
+  if(sc.length>20)sc.length=20;
+  putScores(sc);hlRow=sc.indexOf(e);saved=true;renderLB();
+}
+function renderLB(){
+  var sc=getScores(),el=document.getElementById('lbRows');
+  if(!sc.length){el.innerHTML='<div class="lb-empty">Aucun score enregistré</div>';return;}
+  var md=['🥇','🥈','🥉'];
+  el.innerHTML=sc.map(function(s,i){
+    var gc=i===0?'g1':i===1?'g2':i===2?'g3':'';
+    var hl=i===hlRow?'hl':'';
+    var rk=i<3?md[i]:'#'+(i+1);
+    return '<div class="lb-r '+hl+'"><span class="rk '+gc+'">'+rk+'</span><span class="ln">'+esc(s.name)+'</span><span class="ls">'+s.score+'</span><span class="ld">'+s.date+'</span></div>';
+  }).join('');
+}
+function clearLB(){if(!confirm('Effacer tous les scores ?'))return;localStorage.removeItem('mb3');hlRow=-1;renderLB();}
+
+/* ── ROUTING ── */
+function showS(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goMenu(){
+  clearInterval(timer);isPaused=false;
+  document.getElementById('pov').classList.remove('on');
+  showS('sMenu');
+}
+
+renderLB();
+</script>
+</body>
+</html>
+
+</template>
+
+<template id="tplMemory">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Memory Sum Trainer</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+  --bg:#f4f7fb;
+  --panel:#ffffff;
+  --border:#dbe3ec;
+  --primary:#2563eb;
+  --primary-hover:#1d4ed8;
+  --primary-light:#dbeafe;
+  --success:#16a34a;
+  --danger:#dc2626;
+  --text:#0f172a;
+  --text-soft:#64748b;
+  --shadow:0 4px 12px rgba(15,23,42,0.06);
+  --radius:16px;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Inter',sans-serif;
+}
+
+body{
+  background:var(--bg);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+
+.screen{
+  display:none;
+  width:100%;
+  max-width:720px;
+}
+
+.screen.active{
+  display:block;
+}
+
+.logo{
+  text-align:center;
+  font-size:42px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.logo span{color:var(--primary)}
+
+.tagline{
+  text-align:center;
+  color:var(--text-soft);
+  margin-bottom:24px;
+}
+
+.panel{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+
+.panel-title{
+  font-weight:600;
+  margin-bottom:14px;
+}
+
+.input{
+  width:100%;
+  padding:16px;
+  border:2px solid var(--border);
+  border-radius:14px;
+  font-size:18px;
+  outline:none;
+}
+
+.input:focus{
+  border-color:var(--primary);
+}
+
+.btn{
+  width:100%;
+  border:none;
+  background:var(--primary);
+  color:white;
+  border-radius:14px;
+  padding:18px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.btn:hover{
+  background:var(--primary-hover);
+}
+
+.secondary{
+  background:white;
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
+.hud{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:14px;
+  gap:8px;
+}
+
+.hudBox{
+  flex:1;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:14px;
+  text-align:center;
+}
+
+.hudLabel{
+  color:var(--text-soft);
+  font-size:12px;
+}
+
+.hudValue{
+  font-size:24px;
+  font-weight:700;
+}
+
+.numberScreen{
+  width:100%;
+  height:78vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:white;
+  border-radius:28px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
+
+.numberDisplay{
+  font-size:min(55vw,340px);
+  font-weight:700;
+  line-height:1;
+}
+
+.progress{
+  height:10px;
+  border-radius:999px;
+  background:#e2e8f0;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+.bar{
+  height:100%;
+  background:var(--primary);
+  width:100%;
+}
+
+.result{
+  text-align:center;
+  padding:28px;
+  border-radius:18px;
+}
+
+.correct{
+  background:rgba(22,163,74,.08);
+}
+
+.wrong{
+  background:rgba(220,38,38,.08);
+}
+
+.resultTitle{
+  font-size:34px;
+  font-weight:700;
+  margin-bottom:14px;
+}
+
+.resultText{
+  font-size:20px;
+  line-height:1.7;
+}
+
+.buttons{
+  display:flex;
+  gap:12px;
+  margin-top:16px;
+}
+
+
+.btn.pause{
+  background:#f59e0b;
+}
+
+.btn.pause:hover{
+  background:#d97706;
+}
+
+.btn.danger{
+  background:var(--danger);
+}
+
+.btn.danger:hover{
+  background:#b91c1c;
+}
+
+.numberScreen.paused{
+  opacity:.75;
+  border-style:dashed;
+}
+
+.pauseText{
+  font-size:clamp(32px,8vw,72px);
+  color:var(--text-soft);
+  font-weight:700;
+  text-align:center;
+}
+
+.detailBox{
+  margin-top:16px;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+  text-align:left;
+}
+
+.detailTitle{
+  font-weight:700;
+  margin-bottom:10px;
+  color:var(--text);
+}
+
+.calcLine{
+  color:var(--text);
+  font-size:17px;
+  line-height:1.7;
+  word-break:break-word;
+}
+
+.calcLine strong{
+  color:var(--primary);
+}
+
+.numGrid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+.numChip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 11px;
+  border-radius:10px;
+  background:var(--primary-light);
+  color:var(--primary);
+  font-weight:700;
+  font-size:14px;
+}
+
+.discreetNote{
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:#f8fafc;
+  border:1px dashed var(--border);
+  color:var(--text-soft);
+  font-size:14px;
+  line-height:1.5;
+}
+
+.discreetNote strong{
+  color:var(--danger);
+}
+
+.statusLine{
+  margin-top:12px;
+  text-align:center;
+  color:var(--text-soft);
+  font-weight:600;
+}
+
+@media(max-width:560px){
+  .buttons{flex-direction:column;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div class="screen active" id="menu">
+
+<div class="logo">MEMORY <span>SUM</span></div>
+<div class="tagline">Mémoire additive</div>
+
+<div class="panel">
+<div class="panel-title">Durée totale (secondes)</div>
+<input class="input" id="duration" type="number" value="60">
+</div>
+
+<div class="panel">
+<div class="panel-title">Temps d'affichage d'un nombre (ms)</div>
+<input class="input" id="showTime" type="number" value="1000">
+</div>
+
+<div class="panel">
+<div class="panel-title">Temps avant le nombre suivant (ms)</div>
+<input class="input" id="gapTime" type="number" value="500">
+</div>
+
+<div class="panel">
+<div class="panel-title">Type</div>
+<select class="input" id="digitType">
+<option value="1">1 chiffre</option>
+<option value="2">2 chiffres</option>
+<option value="mix">Mixte</option>
+</select>
+</div>
+
+<button class="btn" onclick="start()">Commencer</button>
+
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game">
+
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<div class="hud">
+<div class="hudBox">
+<div class="hudLabel">Temps</div>
+<div class="hudValue" id="timeLeft"></div>
+</div>
+
+<div class="hudBox">
+<div class="hudLabel">Nombres</div>
+<div class="hudValue" id="count"></div>
+</div>
+</div>
+
+<div class="numberScreen">
+<div class="numberDisplay" id="number"></div>
+</div>
+
+<div class="buttons">
+<button class="btn pause" id="pauseBtn" onclick="togglePause()">Pause</button>
+<button class="btn danger" onclick="stopSession()">Arrêter la session</button>
+<button class="btn secondary" onclick="goBack()">Retour menu</button>
+</div>
+<div class="statusLine" id="statusLine"></div>
+
+</div>
+
+<!-- ANSWER -->
+<div class="screen" id="answer">
+
+<div class="logo" style="font-size:32px">Somme finale</div>
+
+<input class="input" id="answerInput" type="number" placeholder="?">
+
+<button class="btn" onclick="check()">Valider</button>
+
+<div class="buttons">
+<button class="btn secondary" onclick="goBack()">Retour menu</button>
+</div>
+
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="result">
+
+<div id="resultBox"></div>
+
+<div class="buttons">
+<button class="btn" onclick="restart()">Rejouer</button>
+<button class="btn secondary" onclick="goBack()">Menu</button>
+</div>
+
+</div>
+
+<script>
+
+let cfg={}
+let total=0
+let shownCount=0
+let remainingMs=0
+let gameInterval=null
+let cycleTimeout=null
+let hideTimeout=null
+let lastTick=0
+let isPaused=false
+let phase="idle"
+let phaseRemaining=0
+let hideDueAt=0
+let nextDueAt=0
+let entries=[]
+let lastEntry=null
+let excludedLast=null
+let finishedByStop=false
+
+function el(id){
+  return document.getElementById(id)
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+  el(id).classList.add('active')
+}
+
+function rand(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min
+}
+
+function randomNum(){
+  if(cfg.type==="1") return rand(1,9)
+  if(cfg.type==="2") return rand(10,99)
+  return Math.random()<.5?rand(1,9):rand(10,99)
+}
+
+function safeNumber(value, fallback){
+  const n=Number(value)
+  return Number.isFinite(n) && n>0 ? n : fallback
+}
+
+function start(){
+  clearAllTimers()
+
+  cfg={
+    duration:safeNumber(el('duration').value,60),
+    show:safeNumber(el('showTime').value,1000),
+    gap:safeNumber(el('gapTime').value,500),
+    type:el('digitType').value
+  }
+
+  total=0
+  shownCount=0
+  remainingMs=cfg.duration*1000
+  entries=[]
+  lastEntry=null
+  excludedLast=null
+  finishedByStop=false
+  isPaused=false
+  phase="idle"
+  phaseRemaining=0
+
+  el('answerInput').value=""
+  el('number').textContent=""
+  el('number').className="numberDisplay"
+  el('pauseBtn').textContent="Pause"
+  el('statusLine').textContent=""
+
+  show("game")
+  updateHud()
+  startClock()
+  scheduleNumber(0)
+}
+
+function clearAllTimers(){
+  clearInterval(gameInterval)
+  clearTimeout(cycleTimeout)
+  clearTimeout(hideTimeout)
+  gameInterval=null
+  cycleTimeout=null
+  hideTimeout=null
+}
+
+function startClock(){
+  lastTick=Date.now()
+  clearInterval(gameInterval)
+  gameInterval=setInterval(()=>{
+    if(isPaused) return
+    const now=Date.now()
+    remainingMs-=now-lastTick
+    lastTick=now
+    if(remainingMs<=0){
+      remainingMs=0
+      updateHud()
+      finish(false)
+      return
+    }
+    updateHud()
+  },100)
+}
+
+function scheduleNumber(delay){
+  phase="gap"
+  nextDueAt=Date.now()+delay
+  clearTimeout(cycleTimeout)
+  cycleTimeout=setTimeout(showNumber, delay)
+}
+
+function showNumber(){
+  if(isPaused || remainingMs<=0) return
+
+  const n=randomNum()
+  const entry={
+    value:n,
+    shownAt:Date.now(),
+    included:true
+  }
+
+  entries.push(entry)
+  lastEntry=entry
+  total+=n
+  shownCount++
+
+  el('number').textContent=n
+  el('number').className="numberDisplay"
+  phase="show"
+  hideDueAt=Date.now()+cfg.show
+  updateHud()
+
+  clearTimeout(hideTimeout)
+  hideTimeout=setTimeout(()=>{
+    el('number').textContent=""
+    scheduleNumber(cfg.gap)
+  },cfg.show)
+}
+
+function updateHud(){
+  el('timeLeft').textContent=Math.ceil(remainingMs/1000)+"s"
+  el('count').textContent=entries.filter(e=>e.included).length
+  const pct=cfg.duration ? Math.max(0,Math.min(100,(remainingMs/(cfg.duration*1000))*100)) : 0
+  el('bar').style.width=pct+"%"
+}
+
+function togglePause(){
+  if(isPaused){
+    resumeSession()
+  }else{
+    pauseSession()
+  }
+}
+
+function pauseSession(){
+  if(isPaused || remainingMs<=0) return
+
+  isPaused=true
+  clearInterval(gameInterval)
+  clearTimeout(cycleTimeout)
+  clearTimeout(hideTimeout)
+
+  const now=Date.now()
+  if(phase==="show"){
+    phaseRemaining=Math.max(0,hideDueAt-now)
+  }else if(phase==="gap"){
+    phaseRemaining=Math.max(0,nextDueAt-now)
+  }else{
+    phaseRemaining=0
+  }
+
+  el('pauseBtn').textContent="Reprendre"
+  el('statusLine').textContent="Session en pause"
+  el('number').className="numberDisplay pauseText"
+  if(!el('number').textContent){
+    el('number').textContent="Pause"
+  }
+}
+
+function resumeSession(){
+  if(!isPaused) return
+
+  const wasPauseText=el('number').textContent==="Pause"
+  if(wasPauseText) el('number').textContent=""
+  el('number').className="numberDisplay"
+  el('pauseBtn').textContent="Pause"
+  el('statusLine').textContent=""
+
+  isPaused=false
+  startClock()
+
+  if(phase==="show"){
+    hideDueAt=Date.now()+phaseRemaining
+    clearTimeout(hideTimeout)
+    hideTimeout=setTimeout(()=>{
+      el('number').textContent=""
+      scheduleNumber(cfg.gap)
+    },phaseRemaining)
+  }else if(phase==="gap"){
+    scheduleNumber(phaseRemaining)
+  }else{
+    scheduleNumber(0)
+  }
+}
+
+function stopSession(){
+  finish(true)
+}
+
+function finish(manualStop){
+  if(phase==="finished") return
+
+  finishedByStop=manualStop
+  clearAllTimers()
+  isPaused=false
+  phase="finished"
+
+  if(manualStop && lastEntry && lastEntry.included){
+    const age=Date.now()-lastEntry.shownAt
+    if(age<=5000){
+      lastEntry.included=false
+      total-=lastEntry.value
+      excludedLast=lastEntry
+    }
+  }
+
+  el('number').textContent=""
+  el('answerInput').value=""
+  updateHud()
+  show("answer")
+  setTimeout(()=>el('answerInput').focus(),80)
+}
+
+function includedEntries(){
+  return entries.filter(e=>e.included)
+}
+
+function calculationHtml(){
+  const inc=includedEntries()
+  const expression=inc.length ? inc.map(e=>e.value).join(' + ') : 'Aucun nombre compté'
+  const chips=inc.length
+    ? inc.map((e,i)=>`<span class="numChip">${i+1}. ${e.value}</span>`).join('')
+    : '<span class="numChip">Aucun</span>'
+  const excluded=excludedLast
+    ? `<div class="discreetNote">Dernier nombre affiché juste avant l'arrêt : <strong>${excludedLast.value}</strong>. Il n'a pas été inclus dans la somme, car il est apparu moins de 5 secondes avant l'arrêt. Tu peux le prendre en compte mentalement si tu l'avais déjà retenu.</div>`
+    : ''
+
+  return `
+  <div class="detailBox">
+    <div class="detailTitle">Détail du calcul</div>
+    <div class="calcLine">${expression} = <strong>${total}</strong></div>
+    <div class="numGrid">${chips}</div>
+    ${excluded}
+  </div>`
+}
+
+function check(){
+  const raw=el('answerInput').value.trim()
+  const user=raw==="" ? NaN : Number(raw)
+  const ok=user===total
+  const sessionText=finishedByStop ? "Session arrêtée manuellement" : "Session terminée"
+
+  el('resultBox').innerHTML=ok
+  ?`
+  <div class="result correct">
+    <div class="resultTitle">Correct</div>
+    <div class="resultText">
+      ${sessionText}<br>
+      Somme exacte : <strong>${total}</strong>
+    </div>
+  </div>
+  ${calculationHtml()}`
+  :`
+  <div class="result wrong">
+    <div class="resultTitle">Incorrect</div>
+    <div class="resultText">
+      ${sessionText}<br>
+      Ta réponse : <strong>${Number.isNaN(user)?'—':user}</strong><br>
+      Bonne réponse : <strong>${total}</strong>
+    </div>
+  </div>
+  ${calculationHtml()}`
+
+  show("result")
+}
+
+function restart(){
+  el('answerInput').value=""
+  start()
+}
+
+function goBack(){
+  clearAllTimers()
+  isPaused=false
+  phase="idle"
+  el('answerInput').value=""
+  el('number').textContent=""
+  show("menu")
+}
+
+el('answerInput').addEventListener("keydown",e=>{
+  if(e.key==="Enter") check()
+})
+
+</script>
+
+</body>
+</html>
+</template>
+
+<script>
+function openTraining(kind) {
+  const frame = document.getElementById('appFrame');
+  const main = document.getElementById('mainMenu');
+  const view = document.getElementById('appView');
+  const title = document.getElementById('appTitle');
+  if (kind === 'math') {
+    frame.srcdoc = document.getElementById('tplMath').innerHTML;
+    title.textContent = 'Calcul mental';
+  } else {
+    frame.srcdoc = document.getElementById('tplMemory').innerHTML;
+    title.textContent = 'Mémoire additive';
+  }
+  main.style.display = 'none';
+  view.style.display = 'block';
+  window.scrollTo(0,0);
+}
+function backToMain() {
+  const frame = document.getElementById('appFrame');
+  frame.srcdoc = '';
+  document.getElementById('appView').style.display = 'none';
+  document.getElementById('mainMenu').style.display = 'flex';
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
