@@ -27,7 +27,7 @@ body { min-height:100vh; background:var(--bg); color:var(--text); }
 .logo { text-align:center; font-size:clamp(30px,6vw,46px); font-weight:800; letter-spacing:-1.5px; margin-bottom:8px; }
 .logo span { color:var(--primary); }
 .tagline { text-align:center; color:var(--soft); font-weight:500; margin-bottom:28px; line-height:1.5; }
-.choiceGrid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.choiceGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
 .card { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); cursor:pointer; transition:.16s ease; text-align:left; min-height:220px; display:flex; flex-direction:column; justify-content:space-between; }
 .card:hover { transform:translateY(-2px); border-color:#bfdbfe; box-shadow:0 8px 24px rgba(37,99,235,.12); }
 .icon { font-size:42px; margin-bottom:14px; }
@@ -42,6 +42,9 @@ body { min-height:100vh; background:var(--bg); color:var(--text); }
 .backBtn:hover { border-color:var(--primary); color:var(--primary); }
 .appTitle { flex:1; text-align:center; color:var(--soft); font-size:13px; font-weight:700; }
 #appFrame { width:100%; height:calc(100vh - 57px); border:0; display:block; background:white; }
+@media(max-width:900px) {
+  .choiceGrid { grid-template-columns:repeat(2,1fr); }
+}
 @media(max-width:720px) {
   .choiceGrid { grid-template-columns:1fr; }
   .card { min-height:auto; }
@@ -60,7 +63,7 @@ body { min-height:100vh; background:var(--bg); color:var(--text); }
         <div>
           <div class="icon">⚡</div>
           <h2>Calcul mental</h2>
-          <p>Entraînement avec additions, soustractions, multiplications et divisions. Score, erreurs, passes et tableau des scores.</p>
+          <p>Entraînement avec calculs classiques ou mode approximation pour mesurer la précision de tes divisions avec décimales.</p>
         </div>
         <button type="button">Lancer Calcul mental</button>
       </article>
@@ -71,6 +74,14 @@ body { min-height:100vh; background:var(--bg); color:var(--text); }
           <p>Des nombres apparaissent à l’écran : retiens-les, additionne-les, puis vérifie la somme avec le détail du calcul.</p>
         </div>
         <button type="button">Lancer Mémoire additive</button>
+      </article>
+      <article class="card" onclick="openTraining('eopn')">
+        <div>
+          <div class="icon">🎯</div>
+          <h2>CSO / Maths EOPN</h2>
+          <p>CSO, Maths 1, Maths 3, simulations chronométrées, QCM, pièges d’énoncé, aviation, conversions, pourcentages et problèmes longs.</p>
+        </div>
+        <button type="button">Lancer CSO / EOPN</button>
       </article>
     </div>
     <div class="note">Pour GitHub Pages, renomme ce fichier en <strong>index.html</strong> et publie-le comme page principale.</div>
@@ -148,8 +159,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .pill.active{background:var(--primary-lt);border-color:var(--border-f);color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
 
 /* LEVEL */
-.lv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.lv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
 @media(max-width:480px){.lv-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* MODE */
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.mode-btn{border:1.5px solid var(--border);background:var(--panel);border-radius:var(--r);padding:16px 12px;cursor:pointer;transition:all .15s;text-align:left;font-family:'Inter',sans-serif;}
+.mode-btn:hover{border-color:var(--primary);background:var(--primary-xlt);}
+.mode-btn.active{background:var(--primary-lt);border-color:var(--border-f);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+.mode-title{display:block;font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.mode-desc{display:block;font-size:12px;font-weight:500;color:var(--soft);line-height:1.45;}
+.mode-btn.active .mode-title,.mode-btn.active .mode-desc{color:var(--primary);}
+.approx-hint{display:none;margin-top:12px;border:1px solid var(--border-f);background:var(--primary-xlt);color:var(--primary);border-radius:var(--rs);padding:12px 14px;font-size:13px;font-weight:600;line-height:1.5;}
+.approx-hint.show{display:block;}
+@media(max-width:520px){.mode-grid{grid-template-columns:1fr;}}
 .lv-btn{border:1.5px solid var(--border);background:var(--panel);border-radius:var(--r);padding:16px 8px;cursor:pointer;transition:all .15s;text-align:center;font-family:'Inter',sans-serif;}
 .lv-btn:hover{border-color:var(--primary);background:var(--primary-xlt);}
 .lv-btn.active{background:var(--primary-lt);border-color:var(--border-f);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
@@ -255,6 +278,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .chip.correct{background:var(--success-lt);color:var(--success);}
 .chip.skipped{background:var(--border);color:var(--soft);}
 .rv-empty{text-align:center;padding:40px 20px;font-size:16px;font-weight:600;color:var(--success);background:var(--success-lt);border-radius:var(--r);}
+.apx-row{display:grid;grid-template-columns:1fr;gap:10px;}
+.apx-metrics{display:flex;gap:8px;flex-wrap:wrap;}
+.chip.neutral{background:var(--primary-lt);color:var(--primary);}
+.chip.warn{background:#fef3c7;color:#b45309;}
+.chip.soft{background:#f1f5f9;color:var(--soft);}
 
 /* LEADERBOARD */
 .lb-h,.lb-r{display:grid;grid-template-columns:48px 1fr 72px 80px;gap:8px;align-items:center;}
@@ -300,6 +328,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="tagline">Entraînement Calcul Mental</div>
 
   <div class="panel">
+    <div class="pt">🧭 Mode d'entraînement</div>
+    <div class="mode-grid" id="modeGrid">
+      <button class="mode-btn active" data-mode="standard"><span class="mode-title">Calcul classique</span><span class="mode-desc">Réponses exactes, score, erreurs et passes.</span></button>
+      <button class="mode-btn" data-mode="approx"><span class="mode-title">Approximation</span><span class="mode-desc">Divisions avec décimales, précision mesurée à la fin.</span></button>
+    </div>
+    <div class="approx-hint" id="approxHint">Mode approximation : seules les divisions sont proposées. Tu réponds mentalement avec l'approximation qui te semble juste, puis le bilan calcule ta précision moyenne.</div>
+  </div>
+
+  <div class="panel">
     <div class="pt">⏱ Durée de la session</div>
     <div class="dur-grid" id="durGrid">
       <button class="pill" data-v="60">1<br>min</button>
@@ -322,10 +359,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <button class="lv-btn" data-v="2"><span class="lv-num">2</span><span class="lv-desc">Intermédiaire<br>1 – 50</span></button>
       <button class="lv-btn" data-v="3"><span class="lv-num">3</span><span class="lv-desc">Avancé<br>1 – 100</span></button>
       <button class="lv-btn" data-v="4"><span class="lv-num">4</span><span class="lv-desc">Expert<br>1 – 999</span></button>
+      <button class="lv-btn" data-v="5"><span class="lv-num">5</span><span class="lv-desc">Hyper<br>1 – 9999</span></button>
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="opsPanel">
     <div class="pt">🎯 Opérations</div>
     <div class="ops-grid">
       <div class="ci checked" data-op="add"><div class="cb">✓</div><div class="cl"><span class="ops">+&nbsp;</span>Addition</div></div>
@@ -354,9 +392,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <div class="screen" id="sGame">
   <div class="t-track"><div class="t-fill" id="tFill"></div></div>
   <div class="hud">
-    <div class="hc"><div class="hl">Score</div><div class="hv" id="hScore">0</div></div>
+    <div class="hc"><div class="hl" id="hScoreLabel">Score</div><div class="hv" id="hScore">0</div></div>
     <div class="hc"><div class="hl">Temps</div><div class="hv clk" id="hClock">0:00</div></div>
-    <div class="hc"><div class="hl">Tentatives</div><div class="hv" id="hTotal">0</div></div>
+    <div class="hc"><div class="hl" id="hTotalLabel">Tentatives</div><div class="hv" id="hTotal">0</div></div>
     <button class="btn-o" onclick="pauseGame()">⏸ Pause</button>
   </div>
   <div class="q-box">
@@ -386,9 +424,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="sc-big" id="eSc">0</div>
   <div class="sc-sub" id="eSub">0 bonne réponse</div>
   <div class="stats">
-    <div class="sc"><span class="sv" id="eTot">0</span><span class="sl2">Tentatives</span></div>
-    <div class="sc"><span class="sv" id="ePct">0%</span><span class="sl2">Précision</span></div>
-    <div class="sc"><span class="sv" id="eWrg">0</span><span class="sl2">Erreurs</span></div>
+    <div class="sc"><span class="sv" id="eTot">0</span><span class="sl2" id="eTotLbl">Tentatives</span></div>
+    <div class="sc"><span class="sv" id="ePct">0%</span><span class="sl2" id="ePctLbl">Précision</span></div>
+    <div class="sc"><span class="sv" id="eWrg">0</span><span class="sl2" id="eWrgLbl">Erreurs</span></div>
   </div>
 
   <button id="btnRev"
@@ -425,18 +463,34 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 <script>
 /* ── CONFIG ── */
-var cfg = { duration:120, level:1, ops:{add:true,sub:true,mul:false,div:false}, decimals:0 };
+var cfg = { duration:120, level:1, ops:{add:true,sub:true,mul:false,div:false}, decimals:0, mode:'standard' };
 
 /* ── STATE ── */
 var timer=null, timeLeft=0, totalTime=0;
 var score=0, totalQ=0, streak=0;
-var curAns=null, curQ='', curDec=0;
+var curAns=null, curQ='', curDec=0, curAnsDisplayDec=2;
 var isPaused=false, saved=false, hlRow=-1;
 var wrongLog=[];
-var lvMax={1:10,2:50,3:100,4:999};
+var approxLog=[];
+var lvMax={1:10,2:50,3:100,4:999,5:9999};
+var approxRanges={
+  1:{aMin:1,aMax:20,bMin:2,bMax:9},
+  2:{aMin:10,aMax:100,bMin:2,bMax:20},
+  3:{aMin:20,aMax:500,bMin:2,bMax:50},
+  4:{aMin:100,aMax:999,bMin:2,bMax:99},
+  5:{aMin:500,aMax:9999,bMin:2,bMax:999}
+};
 
 /* ── MENU BINDINGS ── */
 (function(){
+  document.querySelectorAll('#modeGrid .mode-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('#modeGrid .mode-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      cfg.mode=b.dataset.mode;
+      syncModeUI();
+    });
+  });
   document.querySelectorAll('#durGrid .pill').forEach(function(b){
     b.addEventListener('click',function(){
       document.querySelectorAll('#durGrid .pill').forEach(function(x){x.classList.remove('active');});
@@ -472,8 +526,63 @@ function rd(n,d){return parseFloat(n.toFixed(d));}
 function fmt(n,d){return d===0?String(n):n.toFixed(d).replace('.',',');}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
+function fmtFlex(n,maxDec){
+  if(!isFinite(n))return '—';
+  var fixed=Number(n).toFixed(maxDec||4);
+  if(fixed.indexOf('.')>=0){
+    fixed=fixed.replace(/0+$/,'').replace(/\.$/,'');
+  }
+  return fixed.replace('.',',');
+}
+function clamp(n,mn,mx){return Math.max(mn,Math.min(mx,n));}
+function syncModeUI(){
+  var isApprox=cfg.mode==='approx';
+  var opsPanel=document.getElementById('opsPanel');
+  var hint=document.getElementById('approxHint');
+  if(opsPanel)opsPanel.style.display=isApprox?'none':'block';
+  if(hint)hint.classList.toggle('show',isApprox);
+}
+function approxStats(){
+  if(!approxLog.length)return {count:0,precision:0,avgPctErr:0,avgAbsErr:0,best:0,worst:0};
+  var sumPrec=0,sumPct=0,sumAbs=0,best=0,worst=100;
+  approxLog.forEach(function(x){
+    sumPrec+=x.precision; sumPct+=x.pctErr; sumAbs+=x.absErr;
+    best=Math.max(best,x.precision); worst=Math.min(worst,x.precision);
+  });
+  return {count:approxLog.length,precision:sumPrec/approxLog.length,avgPctErr:sumPct/approxLog.length,avgAbsErr:sumAbs/approxLog.length,best:best,worst:worst};
+}
+
+/* ── QUESTION ── */
+function newApproxQ(){
+  var d = cfg.decimals === 'mix'
+    ? [0,1,2][Math.floor(Math.random()*3)]
+    : cfg.decimals;
+
+  curDec=d;
+  curAnsDisplayDec=Math.max(3,d+2);
+
+  var r=approxRanges[cfg.level] || approxRanges[4];
+  var a=rnd(r.aMin,r.aMax,d);
+  var b=rnd(r.bMin,r.bMax,d);
+  if(b===0)b=1;
+
+  curAns=a/b;
+  curQ=fmt(a,d)+' ÷ '+fmt(b,d);
+
+  document.getElementById('qTxt').innerHTML =
+    fmt(a,d) +
+    ' <span class="op">÷</span> ' +
+    fmt(b,d) +
+    ' <span class="eq">≈</span>';
+}
+
 /* ── QUESTION ── */
 function newQ(){
+
+  if(cfg.mode==='approx'){
+    newApproxQ();
+    return;
+  }
 
   var acts = Object.keys(cfg.ops).filter(function(k){
     return cfg.ops[k];
@@ -486,6 +595,7 @@ function newQ(){
     : cfg.decimals;
 
   curDec = d;
+  curAnsDisplayDec=d;
 
   var mx = lvMax[cfg.level];
 
@@ -566,6 +676,7 @@ function newQ(){
   var db = op === 'div' ? displayDB : d;
 
   curAns = ans;
+  curAnsDisplayDec=op==='div'?2:d;
 
   curQ = fmt(a, da) + ' ' + sym + ' ' + fmt(b, db);
 
@@ -578,12 +689,14 @@ function newQ(){
 
 /* ── GAME ── */
 function startGame(){
-  if(!Object.values(cfg.ops).some(Boolean)){
+  if(cfg.mode!=='approx' && !Object.values(cfg.ops).some(Boolean)){
     document.getElementById('opsErr').classList.add('show'); return;
   }
   score=0;totalQ=0;streak=0;
   timeLeft=cfg.duration;totalTime=cfg.duration;
-  saved=false;hlRow=-1;wrongLog=[];
+  saved=false;hlRow=-1;wrongLog=[];approxLog=[];
+  document.getElementById('hScoreLabel').textContent=cfg.mode==='approx'?'Précision':'Score';
+  document.getElementById('hTotalLabel').textContent=cfg.mode==='approx'?'Réponses':'Tentatives';
   showS('sGame');updateHUD();newQ();resetInp();focusInp();
   clearInterval(timer);
   timer=setInterval(tick,1000);
@@ -602,7 +715,12 @@ function updateBar(){
   document.getElementById('hClock').classList.toggle('hot',hot);
 }
 function updateHUD(){
-  document.getElementById('hScore').textContent=score;
+  if(cfg.mode==='approx'){
+    var st=approxStats();
+    document.getElementById('hScore').textContent=st.count?fmtFlex(st.precision,1)+'%':'—';
+  }else{
+    document.getElementById('hScore').textContent=score;
+  }
   document.getElementById('hTotal').textContent=totalQ;
   var m=Math.floor(timeLeft/60),s=String(timeLeft%60).padStart(2,'0');
   document.getElementById('hClock').textContent=m+':'+s;
@@ -611,8 +729,41 @@ function onKey(e){if(e.key==='Enter')validate();}
 function validate(){
   var raw=document.getElementById('ansInp').value.replace(',','.').trim();
   if(raw==='')return;
-  var v = Math.floor(parseFloat(raw) * 100) / 100;
-  if(isNaN(v))return;
+  var parsed=parseFloat(raw);
+  if(isNaN(parsed))return;
+
+  var inp=document.getElementById('ansInp');
+  var fl=document.getElementById('flashEl');
+
+  if(cfg.mode==='approx'){
+    var v=parsed;
+    totalQ++;
+    var absErr=Math.abs(v-curAns);
+    var pctErr=curAns!==0 ? (absErr/Math.abs(curAns))*100 : 0;
+    var precision=clamp(100-pctErr,0,100);
+    approxLog.push({
+      q:curQ,
+      given:v,
+      correct:curAns,
+      absErr:absErr,
+      pctErr:pctErr,
+      precision:precision,
+      skipped:false
+    });
+    streak=Math.min(streak+1,5);
+    inp.classList.add(precision>=90?'ok':'bad');
+    fl.textContent='≈ Précision : '+fmtFlex(precision,1)+'%';
+    fl.className=precision>=90?'flash ok show':'flash bad show';
+    updateStreak();updateHUD();
+    setTimeout(function(){
+      fl.className='flash';inp.classList.remove('ok','bad');
+      resetInp();
+      if(timeLeft>0){newQ();focusInp();}
+    },520);
+    return;
+  }
+
+  var v = Math.floor(parsed * 100) / 100;
   totalQ++;
   var tol;
     if(curQ.includes('÷')) {
@@ -621,24 +772,29 @@ function validate(){
       tol = curDec>0 ? Math.pow(10,-curDec)*0.5001 : 0.0001;
     }
   var ok=Math.abs(v-curAns)<=tol;
-  var inp=document.getElementById('ansInp');
-  var fl=document.getElementById('flashEl');
   if(ok){
     score++;streak=Math.min(streak+1,5);
     inp.classList.add('ok');fl.textContent='✓';fl.className='flash ok show';
   }else{
-    wrongLog.push({q:curQ,given:String(v).replace('.',','),correct:fmt(curAns,curDec),skipped:false});
+    wrongLog.push({q:curQ,given:String(v).replace('.',','),correct:fmt(curAns,curAnsDisplayDec),skipped:false});
     streak=0;inp.classList.add('bad');
-    fl.textContent='✗  Réponse : '+fmt(curAns,curDec);fl.className='flash bad show';
+    fl.textContent='✗  Réponse : '+fmt(curAns,curAnsDisplayDec);fl.className='flash bad show';
   }
   updateStreak();updateHUD();
   setTimeout(function(){
     fl.className='flash';inp.classList.remove('ok','bad');
-    resetInp();newQ();focusInp();
+    resetInp();
+    if(timeLeft>0){newQ();focusInp();}
   },420);
 }
 function skipQ(){
-  wrongLog.push({q:curQ,given:'—',correct:fmt(curAns,curDec),skipped:true});
+  if(cfg.mode==='approx'){
+    totalQ++;
+    approxLog.push({q:curQ,given:'—',correct:curAns,absErr:Math.abs(curAns),pctErr:100,precision:0,skipped:true});
+    streak=0;updateStreak();updateHUD();newQ();resetInp();focusInp();
+    return;
+  }
+  wrongLog.push({q:curQ,given:'—',correct:fmt(curAns,curAnsDisplayDec),skipped:true});
   streak=0;updateStreak();newQ();resetInp();focusInp();
 }
 function updateStreak(){
@@ -658,32 +814,79 @@ function endGame(){
   isPaused=false;
   document.getElementById('pov').classList.remove('on');
 
-  var pct=totalQ>0?Math.round(score/totalQ*100):0;
-  var missed=wrongLog.length;
+  if(cfg.mode==='approx'){
+    var st=approxStats();
+    document.getElementById('eSc').textContent=fmtFlex(st.precision,1)+'%';
+    document.getElementById('eSub').textContent=st.count+' réponse'+(st.count>1?'s':'')+' analysée'+(st.count>1?'s':'')+' en approximation';
+    document.getElementById('eTot').textContent=st.count;
+    document.getElementById('ePct').textContent=fmtFlex(st.avgPctErr,2)+'%';
+    document.getElementById('eWrg').textContent=fmtFlex(st.avgAbsErr,3);
+    document.getElementById('eTotLbl').textContent='Réponses';
+    document.getElementById('ePctLbl').textContent='Erreur moyenne';
+    document.getElementById('eWrgLbl').textContent='Écart moyen';
 
-  document.getElementById('eSc').textContent=score;
-  document.getElementById('eSub').textContent=score+' bonne'+(score>1?'s':'')+' réponse'+(score>1?'s':'');
-  document.getElementById('eTot').textContent=totalQ;
-  document.getElementById('ePct').textContent=pct+'%';
-  document.getElementById('eWrg').textContent=missed;
+    var btnA=document.getElementById('btnRev');
+    btnA.style.display='block';
+    btnA.disabled=false;
+    btnA.style.opacity='1';
+    btnA.style.cursor='pointer';
+    btnA.textContent='📊 Voir le détail des calculs ('+st.count+')';
+  }else{
+    var pct=totalQ>0?Math.round(score/totalQ*100):0;
+    var missed=wrongLog.length;
 
-  var btnRev=document.getElementById('btnRev');
-  btnRev.style.display='block';
-  btnRev.disabled=false;
-  btnRev.style.opacity='1';
-  btnRev.style.cursor='pointer';
-  btnRev.textContent = missed>0
-    ? '🔍 Revoir les erreurs & les passes ('+missed+')'
-    : '🎉 Voir le bilan : aucune erreur ni passe';
+    document.getElementById('eSc').textContent=score;
+    document.getElementById('eSub').textContent=score+' bonne'+(score>1?'s':'')+' réponse'+(score>1?'s':'');
+    document.getElementById('eTot').textContent=totalQ;
+    document.getElementById('ePct').textContent=pct+'%';
+    document.getElementById('eWrg').textContent=missed;
+    document.getElementById('eTotLbl').textContent='Tentatives';
+    document.getElementById('ePctLbl').textContent='Précision';
+    document.getElementById('eWrgLbl').textContent='Erreurs';
+
+    var btnRev=document.getElementById('btnRev');
+    btnRev.style.display='block';
+    btnRev.disabled=false;
+    btnRev.style.opacity='1';
+    btnRev.style.cursor='pointer';
+    btnRev.textContent = missed>0
+      ? '🔍 Revoir les erreurs & les passes ('+missed+')'
+      : '🎉 Voir le bilan : aucune erreur ni passe';
+  }
 
   document.getElementById('nmInp').value='';
   showS('sEnd');renderLB();
   setTimeout(function(){document.getElementById('nmInp').focus();},120);
 }
-
 /* ── REVIEW ── */
 function showReview(){
   var list=document.getElementById('rvList');
+  if(cfg.mode==='approx'){
+    document.querySelector('#sRev .logo').textContent='Détail des approximations';
+    document.querySelector('#sRev .tagline').textContent='Toutes tes réponses, avec réponse exacte et précision';
+    if(!approxLog.length){
+      list.innerHTML='<div class="rv-empty">Aucune réponse analysée.</div>';
+      showS('sRev'); return;
+    }
+    list.innerHTML=approxLog.map(function(w,i){
+      var qh=esc(w.q).replace(/÷/g,'<span class="op">÷</span>');
+      var given=w.skipped?'— Passé':fmtFlex(w.given,6);
+      var precision=w.skipped?0:w.precision;
+      var chipClass=precision>=90?'neutral':precision>=75?'warn':'given';
+      return '<div class="rv-card apx-row">'+
+        '<div class="rv-q">'+(i+1)+'. '+qh+' <span class="eq">≈</span></div>'+
+        '<div class="apx-metrics">'+
+          '<span class="chip '+(w.skipped?'skipped':'soft')+'">Ta réponse : <strong>'+esc(given)+'</strong></span>'+
+          '<span class="chip correct">Exact : <strong>'+esc(fmtFlex(w.correct,6))+'</strong></span>'+
+          '<span class="chip '+chipClass+'">Précision : <strong>'+esc(fmtFlex(w.precision,1))+'%</strong></span>'+
+          '<span class="chip soft">Erreur : <strong>'+esc(fmtFlex(w.pctErr,2))+'%</strong></span>'+
+        '</div></div>';
+    }).join('');
+    showS('sRev'); return;
+  }
+
+  document.querySelector('#sRev .logo').textContent='Bilan des erreurs';
+  document.querySelector('#sRev .tagline').textContent='Questions ratées ou passées';
   if(!wrongLog.length){
     list.innerHTML='<div class="rv-empty">🎉 Aucune erreur — bravo !</div>';
     showS('sRev'); return;
@@ -711,7 +914,16 @@ function saveScore(){
   if(saved){renderLB();return;}
   var name=(document.getElementById('nmInp').value.trim()||'Anonyme').slice(0,14);
   var sc=getScores();
-  var e={name:name,score:score,total:totalQ,pct:totalQ>0?Math.round(score/totalQ*100):0,
+  var finalScore=score;
+  var pct=totalQ>0?Math.round(score/totalQ*100):0;
+  var modeLabel='classique';
+  if(cfg.mode==='approx'){
+    var st=approxStats();
+    finalScore=Math.round(st.precision*10)/10;
+    pct=Math.round(st.precision);
+    modeLabel='approx';
+  }
+  var e={name:name,score:finalScore,total:totalQ,pct:pct,mode:modeLabel,
     date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})};
   sc.push(e);sc.sort(function(a,b){return b.score-a.score||b.pct-a.pct;});
   if(sc.length>20)sc.length=20;
@@ -725,7 +937,7 @@ function renderLB(){
     var gc=i===0?'g1':i===1?'g2':i===2?'g3':'';
     var hl=i===hlRow?'hl':'';
     var rk=i<3?md[i]:'#'+(i+1);
-    return '<div class="lb-r '+hl+'"><span class="rk '+gc+'">'+rk+'</span><span class="ln">'+esc(s.name)+'</span><span class="ls">'+s.score+'</span><span class="ld">'+s.date+'</span></div>';
+    return '<div class="lb-r '+hl+'"><span class="rk '+gc+'">'+rk+'</span><span class="ln">'+esc(s.name)+'</span><span class="ls">'+s.score+(s.mode==='approx'?'%':'')+'</span><span class="ld">'+s.date+'</span></div>';
   }).join('');
 }
 function clearLB(){if(!confirm('Effacer tous les scores ?'))return;localStorage.removeItem('mb3');hlRow=-1;renderLB();}
@@ -743,6 +955,7 @@ function goMenu(){
 }
 
 renderLB();
+syncModeUI();
 </script>
 </body>
 </html>
@@ -1462,6 +1675,881 @@ el('answerInput').addEventListener("keydown",e=>{
 </html>
 </template>
 
+<template id="tplEopn">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EOPN Trainer — Raisonnement rapide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--panel:#fff;--border:#e2e8f0;--primary:#2563eb;--primary-h:#1d4ed8;--primary-lt:#dbeafe;--success:#16a34a;--success-lt:#dcfce7;--danger:#dc2626;--danger-lt:#fee2e2;--warning:#d97706;--warning-lt:#fef3c7;--purple:#7c3aed;--text:#0f172a;--soft:#64748b;--xsoft:#94a3b8;--shadow:0 4px 16px rgba(15,23,42,.08);--r:16px;--rs:10px}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent}body{min-height:100vh;background:var(--bg);color:var(--text);display:flex;justify-content:center;padding:22px 14px 48px}.screen{display:none;width:100%;max-width:880px;animation:up .18s ease}.screen.active{display:block}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.logo{text-align:center;font-size:clamp(30px,6vw,44px);font-weight:800;letter-spacing:-1.3px;margin-bottom:6px}.logo span{color:var(--primary)}.tagline{text-align:center;color:var(--soft);font-weight:500;margin-bottom:22px;line-height:1.45}.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}.pt{font-size:13px;font-weight:800;margin-bottom:14px;color:var(--text);text-transform:uppercase;letter-spacing:.4px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.catGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}@media(max-width:760px){.grid2,.grid3,.catGrid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid2,.grid3,.catGrid{grid-template-columns:1fr}.panel{padding:16px}}
+.choice,.cat,.pill{border:1.5px solid var(--border);background:#fff;border-radius:14px;padding:14px;cursor:pointer;transition:.14s;text-align:left}.choice:hover,.cat:hover,.pill:hover{border-color:var(--primary);background:#eff6ff}.choice.active,.cat.active,.pill.active{background:var(--primary-lt);border-color:#bfdbfe;box-shadow:0 0 0 3px rgba(37,99,235,.08)}.choice b,.cat b{display:block;font-size:15px;margin-bottom:5px}.choice span,.cat span{display:block;color:var(--soft);font-size:12px;line-height:1.35}.choice.active b,.choice.active span,.cat.active b,.cat.active span,.pill.active{color:var(--primary)}.pill{text-align:center;font-weight:800;color:var(--soft)}
+.btn{border:none;background:var(--primary);color:#fff;border-radius:14px;padding:16px 20px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(37,99,235,.18)}.btn:hover{background:var(--primary-h)}.btn.secondary{background:#fff;color:var(--text);border:1.5px solid var(--border);box-shadow:none}.btn.secondary:hover{border-color:var(--primary);color:var(--primary);background:#eff6ff}.btn.danger{background:var(--danger)}.btn.ghost{background:#fff;color:var(--soft);border:1.5px solid var(--border);box-shadow:none}.btns{display:flex;gap:10px;align-items:center}.btns .btn{flex:1}@media(max-width:560px){.btns{flex-direction:column}.btns .btn{width:100%}}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}.box{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;box-shadow:var(--shadow)}.box .lab{font-size:10px;color:var(--xsoft);text-transform:uppercase;font-weight:800;letter-spacing:.4px;margin-bottom:3px}.box .val{font-size:clamp(16px,3.6vw,24px);font-weight:800}.box .val.hot{color:var(--danger)}@media(max-width:720px){.hud{grid-template-columns:repeat(2,1fr)}.hud .wide{grid-column:span 2}}
+.barTrack{height:7px;border-radius:99px;background:var(--border);overflow:hidden;margin-bottom:14px}.bar{height:100%;width:100%;background:var(--primary);transition:width .4s linear}.bar.hot{background:var(--danger)}.question{background:#fff;border:1px solid var(--border);border-radius:22px;padding:24px;box-shadow:var(--shadow);margin-bottom:14px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800}.chip.blue{background:var(--primary-lt);color:var(--primary)}.chip.warn{background:var(--warning-lt);color:var(--warning)}.chip.soft{background:#f1f5f9;color:var(--soft)}.qText{font-size:clamp(19px,3.7vw,28px);font-weight:800;line-height:1.35;letter-spacing:-.6px;white-space:pre-line}.qHint{margin-top:14px;color:var(--soft);font-weight:600;font-size:13px;line-height:1.55;background:#f8fafc;border:1px dashed var(--border);border-radius:12px;padding:12px;display:none}.qHint.show{display:block}.options{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}.opt{border:2px solid var(--border);background:#fff;border-radius:15px;padding:17px 12px;font-size:18px;font-weight:800;cursor:pointer;text-align:center;transition:.12s}.opt:hover{border-color:var(--primary);background:#eff6ff}.opt.selected{border-color:var(--primary);background:var(--primary-lt);color:var(--primary)}.opt.good{border-color:var(--success);background:var(--success-lt);color:var(--success)}.opt.bad{border-color:var(--danger);background:var(--danger-lt);color:var(--danger)}@media(max-width:520px){.options{grid-template-columns:1fr}.opt{font-size:16px}}
+.inputRow{display:flex;gap:10px;margin:14px 0}.answerInput{flex:1;border:2px solid var(--border);border-radius:15px;padding:16px;font-size:22px;font-weight:800;text-align:center;outline:none}.answerInput:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.1)}.feedback{display:none;margin-top:12px;border-radius:14px;padding:14px;font-weight:700;line-height:1.5}.feedback.ok{display:block;background:var(--success-lt);color:var(--success)}.feedback.ko{display:block;background:var(--danger-lt);color:var(--danger)}.feedback.neutral{display:block;background:#f1f5f9;color:var(--soft)}
+.resultBig{text-align:center;font-size:clamp(54px,10vw,82px);font-weight:800;color:var(--primary);letter-spacing:-2px;margin:8px 0}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat{background:#fff;border:1px solid var(--border);border-radius:14px;text-align:center;padding:14px;box-shadow:var(--shadow)}.stat b{display:block;font-size:24px;color:var(--primary);margin-bottom:4px}.stat span{font-size:11px;text-transform:uppercase;color:var(--xsoft);font-weight:800;letter-spacing:.4px}@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}.review{display:flex;flex-direction:column;gap:10px}.rv{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:var(--shadow)}.rvTop{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}.rvQ{font-weight:800;line-height:1.35}.rvSmall{font-size:13px;color:var(--soft);line-height:1.55}.method{margin-top:10px;background:#f8fafc;border:1px dashed var(--border);border-radius:12px;padding:10px;color:var(--text);font-size:13px;line-height:1.55}.empty{text-align:center;padding:30px;border-radius:14px;background:var(--success-lt);color:var(--success);font-weight:800}.saveRow{display:flex;gap:10px}.nameInput{flex:1;border:2px solid var(--border);border-radius:14px;padding:14px;font-size:16px;font-weight:800;outline:none;text-align:center;text-transform:uppercase}.nameInput:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.1)}.lbHead,.lbLine{display:grid;grid-template-columns:44px 1fr 70px 80px 70px;gap:8px;align-items:center}.lbHead{color:var(--xsoft);font-size:11px;text-transform:uppercase;font-weight:800;border-bottom:1px solid var(--border);padding:0 8px 9px}.lbLine{padding:10px 8px;border-radius:10px;font-weight:700}.lbLine:nth-child(odd){background:#f8fafc}.lbLine.hl{background:var(--primary-lt);color:var(--primary)}.lbEmpty{padding:18px;text-align:center;color:var(--soft);font-weight:700}@media(max-width:560px){.saveRow{flex-direction:column}.lbHead,.lbLine{grid-template-columns:34px 1fr 56px 62px 52px;font-size:12px}}
+
+.settingGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.toggleLine{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1.5px solid var(--border);border-radius:14px;background:#fff;padding:14px}.toggleLine b{font-size:14px}.toggleLine span{display:block;color:var(--soft);font-size:12px;line-height:1.35;margin-top:4px}.smallInput{width:100%;border:2px solid var(--border);border-radius:14px;padding:12px;font-size:15px;font-weight:800;text-align:center;outline:none}.smallInput:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.1)}.customGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.diagTable{display:grid;gap:8px;margin-top:12px}.diagLine{display:grid;grid-template-columns:1.2fr 70px 70px 80px 1fr;gap:8px;align-items:center;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:10px;font-size:13px}.diagLine.head{background:#fff;color:var(--xsoft);font-weight:800;text-transform:uppercase;font-size:11px}.diagLine b{color:var(--primary)}.historyGroup{margin-top:12px}.historyTitle{font-weight:800;color:var(--text);font-size:13px;margin:12px 0 6px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.toolbar .btn{flex:1;min-width:160px}.notice{background:#eff6ff;border:1px solid #bfdbfe;color:var(--primary);border-radius:14px;padding:12px;font-weight:700;font-size:13px;line-height:1.5}.pauseOverlay{position:fixed;inset:0;background:rgba(241,245,249,.95);backdrop-filter:blur(8px);z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}.pauseOverlay.on{display:flex}.reportBtn{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 10px;font-weight:800;color:var(--soft);cursor:pointer}.reportBtn:hover{border-color:var(--warning);color:var(--warning);background:var(--warning-lt)}@media(max-width:760px){.settingGrid,.customGrid{grid-template-columns:1fr}.diagLine{grid-template-columns:1fr 70px 70px}.diagLine span:nth-child(4),.diagLine span:nth-child(5){grid-column:1/-1}.diagLine.head{display:none}.toolbar .btn{min-width:100%}}
+
+</style>
+</head>
+<body>
+<div class="pauseOverlay" id="pauseOverlay"><div class="logo" style="font-size:34px">Pause</div><div class="notice">La session est suspendue. En simulation réelle, garde plutôt l’option “pause désactivée”.</div><button class="btn" onclick="resumeGame()">Reprendre</button></div>
+<div class="screen active" id="menu">
+  <div class="logo">EOPN <span>TRAINER</span></div>
+  <div class="tagline">CSO, Maths 1, Maths 3, QCM, pièges d’énoncé, simulations chronométrées et méthodes rapides en fin de session.</div>
+
+  <div class="panel">
+    <div class="pt">Format</div>
+    <div class="grid3" id="sessionGrid">
+      <button class="choice active" data-mode="sim"><b>Simulation EOPN</b><span>Format réel : CSO 26/18 min, Maths 1 15/45 min, Maths 3 25/40 min.</span></button>
+      <button class="choice" data-mode="sprint"><b>Sprint ciblé</b><span>Session courte pour travailler la vitesse et les automatismes.</span></button>
+      <button class="choice" data-mode="free"><b>Entraînement libre</b><span>Choisis le nombre de questions et la durée.</span></button>
+      <button class="choice" data-mode="revision"><b>Révision erreurs</b><span>Reprend les catégories ratées avec de nouvelles valeurs.</span></button>
+      <button class="choice" data-mode="order"><b>Ordre de grandeur</b><span>Divisions, conversions et QCM d’estimation très rapide.</span></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">Épreuve</div>
+    <div class="grid3" id="examGrid">
+      <button class="choice active" data-mode="cso"><b>CSO</b><span>Raisonnement numérique court : 26 questions / 18 min.</span></button>
+      <button class="choice" data-mode="math1"><b>Maths 1</b><span>Problèmes longs : 15 questions / 45 min.</span></button>
+      <button class="choice" data-mode="math3"><b>Maths 3</b><span>Problèmes aviation/mission : 25 questions / 40 min.</span></button>
+      <button class="choice" data-mode="mix12"><b>Mix CSO + Maths 1</b><span>Format intermédiaire pour lier calcul rapide et problèmes longs.</span></button>
+      <button class="choice" data-mode="mix"><b>Mix complet</b><span>Mélange CSO + Maths 1 + Maths 3 pour varier les automatismes.</span></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">Mode de réponse</div>
+    <div class="grid2" id="answerModeGrid">
+      <button class="choice active" data-mode="qcm"><b>QCM</b><span>Comme les questions que tu m’as envoyées : utiliser les propositions.</span></button>
+      <button class="choice" data-mode="free"><b>Réponse libre</b><span>Utile pour travailler le calcul, moins rentable le jour J.</span></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">Difficulté</div>
+    <div class="grid3" id="difficultyGrid">
+      <button class="choice active" data-mode="easy"><b>Facile</b><span>Valeurs plus rondes, distracteurs espacés.</span></button>
+      <button class="choice" data-mode="medium"><b>Moyen</b><span>Conversions et pourcentages classiques.</span></button>
+      <button class="choice" data-mode="hard"><b>Difficile</b><span>Plusieurs étapes et distracteurs proches.</span></button>
+      <button class="choice" data-mode="expert"><b>Expert</b><span>Questions longues, arrondis et pièges plus serrés.</span></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">Options de session</div>
+    <div class="settingGrid">
+      <button class="choice active" id="pauseToggle" data-mode="nopause"><b>Pause désactivée</b><span>Plus réaliste en simulation : la pause n’existe pas le jour J.</span></button>
+      <button class="choice" id="reportInfo" data-mode="report"><b>Signalement actif</b><span>Après la session, tu peux marquer une question incohérente.</span></button>
+      <button class="choice" id="exportInfo" data-mode="export"><b>Export disponible</b><span>CSV/JSON du bilan et des détails.</span></button>
+    </div>
+    <div class="customGrid" style="margin-top:10px" id="freeSettings">
+      <div><div class="pt" style="margin-bottom:6px">Questions libres</div><input class="smallInput" id="freeN" type="number" value="10" min="3" max="60"></div>
+      <div><div class="pt" style="margin-bottom:6px">Durée libre (min)</div><input class="smallInput" id="freeMin" type="number" value="10" min="1" max="90"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">Catégories</div>
+    <div class="catGrid" id="catGrid">
+      <button class="cat active" data-cat="division"><b>Divisions</b><span>Estimation décimale.</span></button>
+      <button class="cat active" data-cat="percent"><b>Pourcentages</b><span>Reste, baisse, abattage.</span></button>
+      <button class="cat active" data-cat="units"><b>Conversions</b><span>km, cm, hl, L, cl.</span></button>
+      <button class="cat active" data-cat="geometry"><b>Surfaces/volumes</b><span>Cylindre, allée, pavés.</span></button>
+      <button class="cat active" data-cat="speed"><b>Vitesses</b><span>Distance, retard, moyenne.</span></button>
+      <button class="cat active" data-cat="chain"><b>Proportionnalité</b><span>Peintres, eau, blé → pain.</span></button>
+      <button class="cat active" data-cat="share"><b>Équations</b><span>Partages, systèmes, inconnues.</span></button>
+      <button class="cat active" data-cat="trap"><b>Pièges</b><span>Réflexe d’énoncé.</span></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">Objectif</div>
+    <div style="color:var(--soft);font-weight:600;line-height:1.55">Pendant la session, aucune correction n’est affichée : tu choisis une réponse et l’application passe directement à la suivante. La correction complète, la méthode rapide, les pièges et le diagnostic par catégorie apparaissent uniquement à la fin.</div>
+  </div>
+
+  <button class="btn" onclick="startGame()">▶ Lancer</button>
+</div>
+
+<div class="screen" id="game">
+  <div class="barTrack"><div class="bar" id="bar"></div></div>
+  <div class="hud">
+    <div class="box"><div class="lab">Question</div><div class="val" id="hQ">1/26</div></div>
+    <div class="box"><div class="lab">Temps</div><div class="val" id="hT">18:00</div></div>
+    <div class="box"><div class="lab">Réponses</div><div class="val" id="hS">0</div></div>
+    <div class="box"><div class="lab">Cible</div><div class="val" id="hA">41s</div></div>
+    <div class="box wide"><div class="lab">Temps/question</div><div class="val" id="hAvg">—</div></div>
+  </div>
+
+  <div class="question">
+    <div class="meta"><span class="chip blue" id="catChip">Catégorie</span><span class="chip soft" id="typeChip">QCM</span><span class="chip warn" id="targetChip">≈ 41 s/question</span></div>
+    <div class="qText" id="qText"></div>
+    <div class="options" id="options"></div>
+    <div class="inputRow" id="inputRow" style="display:none"><input class="answerInput" id="answerInput" inputmode="decimal" placeholder="Ta réponse"><button class="btn" onclick="validateFree()">OK</button></div>
+  </div>
+
+  <div class="btns">
+    <button class="btn ghost" id="pauseBtn" onclick="pauseGame()">Pause</button>
+    <button class="btn ghost" onclick="skipQ()">Passer</button>
+    <button class="btn danger" onclick="finishGame()">Terminer</button>
+  </div>
+</div>
+
+<div class="screen" id="end">
+  <div class="logo" style="font-size:clamp(24px,5vw,34px)">Bilan EOPN</div>
+  <div class="tagline" id="endSub">Session terminée</div>
+  <div class="resultBig" id="endScore">0</div>
+  <div class="stats">
+    <div class="stat"><b id="stGood">0</b><span>Bonnes réponses</span></div>
+    <div class="stat"><b id="stWrong">0</b><span>Erreurs</span></div>
+    <div class="stat"><b id="stSkip">0</b><span>Non traitées</span></div>
+    <div class="stat"><b id="stAcc">0%</b><span>Justesse</span></div>
+    <div class="stat"><b id="stAvg">—</b><span>Temps moyen</span></div>
+    <div class="stat"><b id="stGross">0</b><span>Grosses erreurs</span></div>
+  </div>
+  <div class="panel">
+    <div class="pt">Diagnostic</div>
+    <div id="diag" style="color:var(--soft);font-weight:600;line-height:1.6"></div>
+    <div class="diagTable" id="diagTable"></div>
+  </div>
+  <div class="panel">
+    <div class="pt">Enregistrer le résultat</div>
+    <div class="saveRow"><input class="nameInput" id="eopnName" placeholder="Ton prénom / pseudo" maxlength="14"><button class="btn" onclick="saveEopnScore()">Enregistrer</button></div>
+  </div>
+  <div class="panel">
+    <div class="pt">Historique EOPN séparé par épreuve</div>
+    <div id="eopnLbRows" class="lbRows"></div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" onclick="showReview()">Voir le détail corrigé</button>
+    <button class="btn secondary" onclick="exportSessionCSV()">Exporter CSV</button>
+    <button class="btn secondary" onclick="exportSessionJSON()">Exporter JSON</button>
+    <button class="btn secondary" onclick="startRevisionFromEnd()">Réviser les erreurs</button>
+    <button class="btn secondary" onclick="backMenu()">Menu</button>
+  </div>
+</div>
+
+<div class="screen" id="review">
+  <div class="logo" style="font-size:clamp(24px,5vw,34px)">Détail des questions</div>
+  <div class="tagline">Réponses, temps, type d’erreur et méthode rapide.</div>
+  <div class="review" id="reviewList"></div>
+  <button class="btn" style="margin-top:16px;width:100%" onclick="show('end')">↩ Retour au bilan</button>
+</div>
+
+<script>
+
+const cfg={exam:'cso',session:'sim',answerMode:'qcm',difficulty:'easy',noPause:true,cats:['division','percent','units','geometry','speed','chain','share','trap']};
+let state={questions:[],index:0,score:0,good:0,wrong:0,skipped:0,gross:0,start:0,qStart:0,duration:1080,timer:null,logs:[],locked:false,target:41};
+let eopnSaved=false, eopnHighlight=-1;
+const catNames={division:'Divisions',percent:'Pourcentages',units:'Conversions',geometry:'Surfaces/volumes',speed:'Vitesses',chain:'Proportionnalité',share:'Équations/partages',trap:'Pièges d’énoncé'};
+const examNames={cso:'CSO',math1:'Maths 1',math3:'Maths 3',mix12:'Mix CSO + Maths 1',mix:'Mix complet',legacy:'Ancien historique'};
+const diffNames={easy:'Facile',medium:'Moyen',hard:'Difficile',expert:'Expert'};
+const SCORE_KEY='eopnScores_v6', LEGACY_SCORE_KEY='eopnScores', MISSED_KEY='eopnMissedBank_v6', REPORT_KEY='eopnReportedQuestions_v6';
+function el(id){return document.getElementById(id)}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el(id).classList.add('active');window.scrollTo(0,0)}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function rnd(min,max,dec=0){const n=Math.random()*(max-min)+min;return dec===0?Math.round(n):Number(n.toFixed(dec))}
+function rint(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function pick(a){return a[rint(0,a.length-1)]}
+function round(n,d=2){return Number(Number(n).toFixed(d))}
+function fmt(n,d=2){if(typeof n==='string')return n; if(!Number.isFinite(n))return '—'; let s=Number(n).toFixed(d); s=s.replace(/0+$/,'').replace(/[\.,]$/,''); return s.replace('.',',')}
+function pct(x){return Math.round(x)+'%'}
+function hmin(totalMin){totalMin=Math.round(totalMin); const h=Math.floor(totalMin/60),m=totalMin%60; return String(h).padStart(2,'0')+'h'+String(m).padStart(2,'0')+'m'}
+function bindGrid(id,key,multi=false){document.querySelectorAll('#'+id+' button').forEach(b=>b.addEventListener('click',()=>{if(multi){b.classList.toggle('active');cfg.cats=[...document.querySelectorAll('#catGrid .cat.active')].map(x=>x.dataset.cat); if(!cfg.cats.length){b.classList.add('active');cfg.cats=[b.dataset.cat]}}else{document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active');cfg[key]=b.dataset.mode}}))}
+bindGrid('examGrid','exam'); bindGrid('sessionGrid','session'); bindGrid('answerModeGrid','answerMode'); bindGrid('difficultyGrid','difficulty'); bindGrid('catGrid','cats',true);
+el('pauseToggle').addEventListener('click',()=>{cfg.noPause=!cfg.noPause;el('pauseToggle').classList.toggle('active',cfg.noPause)});
+function makeChoices(correct,dec=0,extras=[],unit=''){
+  const c=round(correct,dec);
+  const vals=[];
+  const minGap=dec===0?1:Math.pow(10,-dec);
+  const level=cfg.difficulty||'easy';
+  const closeFactor={easy:.10,medium:.055,hard:.028,expert:.015}[level]||.055;
+  function add(v){
+    v=round(v,dec);
+    if(!Number.isFinite(v))return;
+    if(!vals.some(x=>Math.abs(x-v)<minGap*.51))vals.push(v);
+  }
+  add(c);
+  extras.forEach(add);
+  const base=Math.max(Math.abs(c),1);
+  const step=dec===0?Math.max(1,Math.round(base*closeFactor)):Math.max(minGap,base*closeFactor);
+  // Distracteurs plausibles : arrondi, virgule, pourcentage inverse, oubli d’une étape, +/− proche.
+  [c+step,c-step,c+2*step,c-2*step,c*1.1,c*0.9,c/10,c*10,Math.round(c),Math.ceil(c),Math.floor(c)].forEach(add);
+  if(level==='hard'||level==='expert'){
+    [c+step/2,c-step/2,c+step*1.5,c-step*1.5].forEach(add);
+  }
+  while(vals.length<5)add(c+rnd(-4*step,4*step,dec+1));
+  return shuffle(vals.slice(0,5).map(v=>({label:fmt(v,dec)+(unit?' '+unit:''),value:v,correct:Math.abs(v-c)<=minGap*.51})));
+}
+function normalizeQ(obj){
+  obj.exam=obj.exam||cfg.exam;
+  obj.difficulty=cfg.difficulty;
+  obj.quickMethod=obj.quickMethod||obj.method||'Commence par l’ordre de grandeur, élimine les réponses absurdes, puis vérifie avec l’unité.';
+  obj.trap=obj.trap||obj.errorType||'Vérifier l’unité, l’arrondi et le sens de la question.';
+  obj.errorType=obj.errorType||'erreur de raisonnement ou d’arrondi';
+  return obj;
+}
+function qNumeric(obj){obj.kind='num'; obj=normalizeQ(obj); obj.choices=makeChoices(obj.answer,obj.decimals||0,obj.distractors||[],obj.unit||''); return obj}
+function qText(obj){obj.kind='text'; obj=normalizeQ(obj); obj.choices=shuffle(obj.options.map(o=>({label:o,correct:o===obj.answer}))); return obj}
+
+/* ───────────── DIVISIONS DÉCIMALES ───────────── */
+function genDivision(){
+  const b=rnd(1.7,12.2,2); const res=rnd(3,30,2); const a=round(b*res,2); const ans=a/b;
+  return qNumeric({cat:'division',text:`Estime rapidement :\n${fmt(a,2)} ÷ ${fmt(b,2)} = ?`,answer:ans,decimals:2,tol:0.12,unit:'',errorType:'ordre de grandeur / division décimale',method:`Réflexe CSO : transforme la division en multiplication. Cherche q tel que ${fmt(b,2)} × q ≈ ${fmt(a,2)}. Si ${fmt(b,2)} est proche de ${fmt(Math.round(b),0)}, commence par ${fmt(a,0)} ÷ ${fmt(Math.round(b),0)}, puis vérifie diviseur × réponse ≈ nombre.`})
+}
+
+/* ───────────── POURCENTAGES / FRACTIONS ───────────── */
+function genVerger(){
+  const a=rint(220,520),b=rint(220,520); const p1=pick([18,21,25,37,42,59,68,74]); const p2=pick([21,35,41,59,63,68,72]);
+  const ans=Math.floor(a*(1-p1/100)+b*(1-p2/100));
+  return qNumeric({cat:'percent',text:`Pierre possède un verger composé de ${a} pommiers et ${b} poiriers. Sachant qu'il abat ${p2}% de poiriers et ${p1}% de pommiers, combien d'arbres restent-ils au total ?`,answer:ans,decimals:0,tol:1,unit:'',errorType:'pourcentage restant',method:`On cherche ce qui reste : il reste ${100-p1}% des pommiers et ${100-p2}% des poiriers. Plus rapide que calculer les arbres abattus : ${100-p1}% de ${a} + ${100-p2}% de ${b}, puis arrondi à l’inférieur si besoin.`})
+}
+function genTankConsumption(){
+  const capacity=pick([180,200,220,240,250,300,320]); const dist=pick([200,250,300,400,500]); const frac=pick([{l:'1/2',v:1/2},{l:'2/5',v:2/5},{l:'3/5',v:3/5},{l:'1/4',v:1/4}]);
+  const ans=capacity*frac.v/dist*100;
+  return qNumeric({cat:'percent',text:`Un tank dispose d'un réservoir de ${capacity} litres. Après avoir parcouru ${dist} km, il a consommé les ${frac.l} de son réservoir. Quelle est sa consommation pour 100 km ?`,answer:ans,decimals:0,tol:1,unit:'L/100 km',errorType:'consommation pour 100 km',method:`Consommation réelle = ${frac.l} de ${capacity} L. Puis on ramène à 100 km : consommé ÷ ${dist} × 100. Réflexe : pour 250 km, diviser par 2,5 ; pour 500 km, diviser par 5.`})
+}
+function genFuelLongTrip(){
+  const baseD=pick([1000,1200,1500,1800]); const baseC=pick([500,600,750,900]); const trip=pick([3500,4200,5000,5500,6000]); const inc=pick([10,12,15,20]);
+  const ans=trip*baseC/baseD*(1+inc/100);
+  return qNumeric({cat:'percent',text:`Un avion consomme ${baseC} litres de carburant pour ${baseD} km. Combien consommera-t-il pour un trajet de ${trip} km si la consommation augmente de ${inc}% sur les longs trajets ?`,answer:ans,decimals:1,tol:2,unit:'L',errorType:'proportionnalité + majoration',method:`D’abord la proportion sans augmentation : ${trip}×${baseC}/${baseD}. Ensuite on ajoute ${inc}% : multiplier par ${fmt(1+inc/100,2)}.`})
+}
+function genCapacityIncrease(){
+  const initial=pick([24,30,36,40,48,60]); const first=pick([5,8,10,12]); const target=pick([40,50,60,75]); const gain=initial*first/100; const current=initial*(1+first/100); const targetCap=initial*(1+target/100); const ans=(targetCap-current)/current*100;
+  return qNumeric({cat:'percent',text:`Le volume d'eau que peut transporter une citerne a augmenté de ${fmt(gain,1)} litres, soit ${first}%, après modification. De combien de pourcent doit-elle augmenter sa nouvelle capacité pour atteindre une augmentation totale de ${target}% ?`,answer:ans,decimals:1,tol:0.4,unit:'%',errorType:'pourcentage sur nouvelle base',method:`Attention : le dernier pourcentage se calcule sur la nouvelle capacité, pas sur l’ancienne. Initiale = gain/${first}%. Cible = capacité initiale × ${fmt(1+target/100,2)}. Pourcentage demandé = (cible - nouvelle capacité) / nouvelle capacité × 100.`})
+}
+function genCake(){
+  const flour=pick([{l:'25%',v:.25},{l:'20%',v:.20},{l:'30%',v:.30}]); const sugar=pick([{l:'2/9',v:2/9},{l:'1/5',v:.20},{l:'1/4',v:.25}]); const milk=pick([{l:'1/9',v:1/9},{l:'1/10',v:.10},{l:'1/8',v:.125}]); const yolk=pick([{l:'10%',v:.10},{l:'12%',v:.12},{l:'15%',v:.15}]); const butter=pick([60,75,90,100,120]);
+  let used=flour.v+sugar.v+milk.v+yolk.v; if(used>=.85){used=.68}
+  const ans=butter/(1-used);
+  return qNumeric({cat:'percent',text:`Un gâteau contient ${flour.l} de farine, ${sugar.l} de sucre, ${milk.l} de lait, ${yolk.l} de jaune d'œuf et ${butter} g de beurre. Quel est le poids total ?`,answer:ans,decimals:0,tol:1,unit:'g',errorType:'part restante du total',method:`Additionne les parts connues. Le beurre représente la part restante : 1 - parts connues. Donc total = poids du beurre ÷ part restante.`})
+}
+function genField(){
+  const cases=[{a:'1/8',av:1/8,b:'2/5',bv:2/5,S:320},{a:'1/6',av:1/6,b:'1/3',bv:1/3,S:360},{a:'1/5',av:1/5,b:'7/20',bv:7/20,S:400},{a:'3/16',av:3/16,b:'5/16',bv:5/16,S:448}];
+  const c=pick(cases); const diff=round((c.bv-c.av)*c.S,0); const ans=c.S*(1-c.av-c.bv);
+  return qNumeric({cat:'percent',text:`Un champ a été ensemencé pour ${c.a} en blé et ${c.b} en orge. La partie en orge surpasse celle en blé de ${diff} ares. Quelle est la surface en ares de la partie restante ?`,answer:ans,decimals:0,tol:1,unit:'ares',errorType:'fractions du total',method:`La différence orge - blé vaut ${c.b} - ${c.a} de la surface totale. Cette différence correspond à ${diff} ares. Trouve le total, puis calcule le reste : 1 - ${c.a} - ${c.b}.`})
+}
+function genComparisonPercent(){
+  const A=pick([60,70,80,90,120,150]); const B=pick([12,15,18,24,30,36]); const ans=B/A*100;
+  return qNumeric({cat:'percent',text:`Au cours du mois, la concession A a vendu ${A} voitures tandis que la concession B en a vendu ${B}. Quel pourcentage représentent les ventes de B par rapport à celles de A ?`,answer:ans,decimals:1,tol:0.2,unit:'%',errorType:'pourcentage relatif',method:`“B par rapport à A” signifie B/A × 100. Ici : ${B}/${A} × 100.`})
+}
+function genFuelFractions(){
+  const total=pick([9000,10500,11500,12000]); const f1={l:'3/7',v:3/7}, f2={l:'2/3',v:2/3}, f3={l:'12/19',v:12/19}; const ans=total*(1-f1.v-f2.v-f3.v);
+  return qNumeric({cat:'percent',text:`Un réservoir contient ${fmt(total,0)} L. On consomme ${f1.l} du contenu de départ, puis ${f2.l} du contenu de départ, puis ${f3.l} du contenu de départ. Combien reste-t-il ?`,answer:ans,decimals:0,tol:40,unit:'L',errorType:'contenu de départ / fractions',method:`Mot-clé : contenu de départ. On additionne directement les fractions sur la quantité initiale : reste = total × (1 - ${f1.l} - ${f2.l} - ${f3.l}).`})
+}
+
+/* ───────────── CONVERSIONS ───────────── */
+function genFootConversion(){
+  const km=pick([1.5,2,2.5,3]); const foot=pick([28.13,30.48]); const ans=km*100000/foot;
+  return qNumeric({cat:'units',text:`Un ingénieur doit convertir la longueur d'un pont mesurant ${fmt(km,1)} kilomètre${km>1?'s':''} en pieds. Sachant qu'un pied mesure ${fmt(foot,2)} cm, combien de pieds mesure le pont ?`,answer:ans,decimals:1,tol:5,unit:'pieds',errorType:'conversion km → cm puis division',method:`Convertis d’abord en cm : ${fmt(km,1)} km = ${fmt(km*100000,0)} cm. Puis divise par ${fmt(foot,2)}. En QCM, vérifie par multiplication : réponse × ${fmt(foot,2)} ≈ ${fmt(km*100000,0)}.`})
+}
+function genScale(){
+  const model=pick([6,8,9,12,15]); const den=pick([125,150,175,200,225,250,275,300]); const realM=model*den/100; const answer='1/'+den;
+  const opts=shuffle([den,den-25,den+25,den+34,Math.max(50,den-38)].map(x=>'1/'+x));
+  return qText({cat:'units',text:`Un architecte crée une maquette d'un bâtiment. La maquette mesure ${model} cm de hauteur. Si le bâtiment réel mesure ${fmt(realM,2)} mètres de haut, quelle est l'échelle utilisée ?`,answer,options:opts,errorType:'échelle et conversion m → cm',method:`Convertis le réel en cm : ${fmt(realM,2)} m = ${fmt(realM*100,0)} cm. Échelle = maquette / réel = ${model}/${fmt(realM*100,0)} = 1/${den}.`})
+}
+function genHectares(){
+  const first=pick([1000,1200,1500,1800,2000]); const day=pick([5,6,7,8]); const ans=first*Math.pow(2,day-1)/10000;
+  return qNumeric({cat:'units',text:`Suite au naufrage d'un navire, une marée noire se répand. Le 1er jour, sa superficie est de ${first} m². La superficie double tous les jours. Quelle sera la superficie le ${day}ème jour, en hectares ?`,answer:ans,decimals:1,tol:0.1,unit:'ha',errorType:'doublement + m² → hectares',method:`Jour ${day} = jour 1 × 2^(${day}-1). Puis conversion : 1 hectare = 10 000 m².`})
+}
+function genBottleConversion(){
+  const liters=pick([450,900,1200,1500]); const cl=pick([50,75,100]); const ans=liters/(cl/100);
+  return qNumeric({cat:'units',text:`On dispose de ${liters} litres de liquide. Une bouteille contient ${cl} cl. Combien de bouteilles peut-on remplir ?`,answer:ans,decimals:0,tol:1,unit:'bouteilles',errorType:'cl → L',method:`Convertis la bouteille en litres : ${cl} cl = ${fmt(cl/100,2)} L. Nombre de bouteilles = litres ÷ ${fmt(cl/100,2)}. Cas très utile : 50 cl = 0,5 L, donc on multiplie les litres par 2.`})
+}
+
+/* ───────────── SURFACES / VOLUMES ───────────── */
+function genCylinder(){
+  const d=pick([4,5,6,8]); const h=pick([3,5,6]); const cl=pick([50,75]); const r=d/2; const liters=3.14*r*r*h*1000; const ans=liters/(cl/100);
+  return qNumeric({cat:'geometry',text:`Un vigneron met sa récolte dans un fût cylindrique de diamètre ${d} m et de hauteur ${h} m. Une bouteille contient ${cl} cl de vin. Combien de bouteilles seront nécessaires ? Pi = 3,14.`,answer:ans,decimals:0,tol:2,unit:'',errorType:'volume / conversion litres',method:`Volume cylindre = πr²h. Diamètre ${d} m donc rayon ${fmt(r,1)} m. Convertis m³ en litres en multipliant par 1000. Puis ${cl} cl = ${fmt(cl/100,2)} L.`})
+}
+function genPaving(){
+  const L=pick([30,40,50,60]); const W=pick([15,20,24,30]); const w=pick([1,2,3]); const side=25; const pack=pick([200,250,300]); const pose=pick([350,400,500]);
+  const innerL=L-2*w, innerW=W-2*w; const alley=L*W-innerL*innerW; const paverArea=(side/100)*(side/100); const pavers=alley/paverArea; const ans=pavers*(pack/50)+alley*pose;
+  return qNumeric({cat:'geometry',text:`Une place rectangulaire de ${L} m de long et ${W} m de large a une pelouse centrale et une allée de ${w} m de large. On pave l'allée avec des pavés de ${side} cm de côté à ${pack} € la cinquantaine, et la pose coûte ${pose} €/m². Quel est le coût total ?`,answer:ans,decimals:0,tol:120,unit:'€',errorType:'surface d’allée / pavés / coût',method:`Allée = surface totale - pelouse centrale : ${L}×${W} - ${innerL}×${innerW}. Pavé de 25 cm : 0,25×0,25 = 0,0625 m², soit 16 pavés par m². Coût = pavés + pose.`})
+}
+function genSquareHangar(){
+  const current=pick([28,30,34,40,46,52]); const inc=pick([4,6,8,10]); const surface=(current+inc)*(current+inc);
+  return qNumeric({cat:'geometry',text:`Un hangar à avions, de forme carrée, aurait une surface de ${surface} m² si chacun de ses côtés avait ${inc} m de plus. Quelle est la longueur actuelle d'un côté du hangar ?`,answer:current,decimals:0,tol:0,unit:'m',errorType:'racine carrée + retrait',method:`Si le côté augmenté donne ${surface} m², alors le côté augmenté vaut √${surface} = ${current+inc} m. Le côté actuel vaut ${current+inc} - ${inc} = ${current} m.`})
+}
+function genTerrain(){
+  const s=pick([80,90,95,100,110,120]); const a=pick([15,20,25,30]); const b=pick([5,10,12,15]); const width=b*(s+a)/(a+b); const per=2*s;
+  return qNumeric({cat:'geometry',text:`Monsieur Jean envisage d'acheter un terrain rectangulaire de périmètre ${per} m. Le propriétaire propose d'augmenter la longueur de ${a} m et de diminuer la largeur de ${b} m sans changer l'aire. Quelle est la largeur initiale ?`,answer:width,decimals:2,tol:0.04,unit:'m',errorType:'système aire + périmètre',method:`Périmètre ${per} m donc L + l = ${s}. Aire inchangée : (L+${a})(l-${b}) = Ll. Après simplification : ${a}l - ${b}L = ${a*b}. Avec L = ${s} - l, on trouve l = ${b}(${s}+${a})/(${a}+${b}).`})
+}
+function genWheels(){
+  const d1=pick([40,50,60]); const d2=pick([100,120,140,150]); const km=pick([5,8,10,12]); const pi=pick([3,3.14]); const dist=km*100000; const ans=dist/(pi*d1)-dist/(pi*d2);
+  return qNumeric({cat:'geometry',text:`Les roues avant d'un véhicule ont un diamètre de ${d1} cm, les roues arrière de ${d2} cm. Le véhicule parcourt ${km} km. Combien de tours en plus font les petites roues ? Pi = ${fmt(pi,2)}.`,answer:ans,decimals:0,tol:3,unit:'tours',errorType:'périmètre de roue / conversion km → cm',method:`Distance en cm : ${km} km = ${fmt(dist,0)} cm. Tours = distance ÷ périmètre. Périmètre = π × diamètre. Différence = tours petites roues - tours grandes roues.`})
+}
+
+/* ───────────── VITESSE / TEMPS / DISTANCE ───────────── */
+function genDroneDistance(){
+  const v=pick([180,220,240,260,300]); const h=pick([1,2]); const m=pick([12,24,30,36,48]); const t=h+m/60; const ans=v*t;
+  return qNumeric({cat:'speed',text:`Un drone vole à une vitesse constante de ${v} km/h. S'il vole pendant ${h} heure${h>1?'s':''} et ${m} minutes, quelle distance aura-t-il parcourue ?`,answer:ans,decimals:0,tol:1,unit:'km',errorType:'temps h + minutes',method:`Convertis les minutes en heures : ${m} min = ${fmt(m/60,2)} h. Temps total = ${fmt(t,2)} h. Distance = vitesse × temps.`})
+}
+function genHikerTime(){
+  const d1=pick([40,50,60,80]); const base=pick([120,150,180]); const d2=pick([140,170,190,220]); const ansMin=base*d2/d1; const answer=hmin(ansMin);
+  const options=shuffle([answer,hmin(ansMin*0.96),hmin(ansMin*1.04),hmin(ansMin+28),hmin(Math.max(30,ansMin-35))]);
+  return qText({cat:'speed',text:`Un randonneur a mis ${hmin(base)} pour parcourir ${d1} km sur un terrain donné. Combien de temps lui faudra-t-il pour parcourir ${d2} km sur un terrain similaire ?`,answer,options,errorType:'proportionnalité distance-temps',method:`Même terrain donc même vitesse. Temps cherché = temps initial × ${d2}/${d1}. Le plus rapide est de raisonner en minutes, puis de reconvertir en heures/minutes.`})
+}
+function genAirNegative(){
+  const total=pick([1800,2000,2400]); const plan=pick([3,4]); const covered=total+pick([200,300,400]); const delay=pick([2,3]); const avg=pick([120,150,180]);
+  const plannedSpeed=total/plan; const realTime=covered/plannedSpeed+delay; const totalTime=total/avg; const ans=(total-covered)/(totalTime-realTime);
+  return qNumeric({cat:'speed',text:`Un avion doit accomplir une patrouille de ${total} km en ${plan} h. Après avoir parcouru ${covered} km, il se retrouve avec un retard de ${delay} h. À quelle vitesse doit-il voler sur le reste du trajet pour atteindre une vitesse moyenne de ${avg} km/h sur l'ensemble du vol ?`,answer:ans,decimals:1,tol:0.5,unit:'km/h',errorType:'distance restante négative',method:`Piège : ${covered} km est supérieur au trajet total ${total} km. La distance restante est donc négative. Vitesse restante = distance restante / temps restant.`})
+}
+function genObstacleSoldiers(){
+  const start=pick([3,4,5]); const end=pick([10,12,13,15]); const t=pick([8,10,12]); const dec=pick([5,8,10]); const ans=t*end/start*(1-dec/100);
+  return qNumeric({cat:'speed',text:`Pour un parcours d'obstacles, ${start} soldats ont besoin de ${t} minutes. Combien de temps ${end} soldats prendraient-ils pour le même parcours, sachant que le temps diminue de ${dec}% avec plus de participants ?`,answer:ans,decimals:2,tol:0.08,unit:'min',errorType:'proportionnalité puis baisse',method:`Même logique que l’entraînement CSO : temps de base × ${end}/${start}, puis diminution de ${dec}%, donc × ${fmt(1-dec/100,2)}.`})
+}
+
+/* ───────────── PROPORTIONNALITÉ / CHAÎNES ───────────── */
+function genPainters(){
+  const p1=pick([3,4,5]); const area1=pick([6,8,10]); const t1=pick([30,36,40]); const p2=pick([2,3]); const area2=pick([12,15,17,20]); const ans=t1*p1*area2/(area1*p2);
+  return qNumeric({cat:'chain',text:`${p1} peintres peignent une surface de ${area1} m² en ${t1} min. Combien de temps est nécessaire pour peindre ${area2} m² avec ${p2} peintres ?`,answer:ans,decimals:0,tol:1,unit:'min',errorType:'travail = peintres × temps',method:`Utilise les “peintre-minutes”. ${p1} peintres × ${t1} min pour ${area1} m². Temps cherché = ${t1}×${p1}×${area2}/(${area1}×${p2}). Plus de surface augmente le temps, plus de peintres le diminue.`})
+}
+function genWheatBread(){
+  const vol=pick([200,230,250]); const kg=pick([180,200,220]); const hl=pick([1.5,2,2.5,3]); const loss=pick([60,70,75]); const flourForBread=pick([8,9]); const bread=10;
+  const ans=((hl*100)/vol)*kg*(1-loss/100)*bread/flourForBread;
+  return qNumeric({cat:'chain',text:`Un sac de blé de ${vol} litres pèse ${kg} kg. Quand on réduit le blé en farine, il perd ${loss}% de son poids. Pour fabriquer ${bread} kg de pain, il faut utiliser ${flourForBread} kg de farine. Combien de kg de pain peut-on préparer avec ${fmt(hl,1)} hl de blé ?`,answer:ans,decimals:0,tol:1,unit:'kg',errorType:'chaîne de coefficients',method:`Chaîne : hl → litres → kg de blé → kg de farine → kg de pain. ${fmt(hl,1)} hl = ${fmt(hl*100,0)} L. Perdre ${loss}% = garder ${100-loss}%. Puis pain = farine × ${bread}/${flourForBread}.`})
+}
+function genWaterSoldiers(){
+  const s1=pick([8,10,12,15]); const water=pick([80,90,110,150]); const s2=pick([30,40,45,60]); const ans=water*s2/s1;
+  return qNumeric({cat:'chain',text:`Si une escouade de ${s1} soldats consomme ${water} litres d'eau en une journée, combien d'eau est nécessaire pour une escouade de ${s2} soldats pour la même période ?`,answer:ans,decimals:0,tol:1,unit:'L',errorType:'proportionnalité directe',method:`Même durée, donc proportion directe : eau × ${s2}/${s1}.`})
+}
+function genAutonomy(){
+  const auto=pick([60,75,90,120]); const n=pick([3,4,5,6]); const mission=pick([20,25,30,35]); const ans=auto-n*mission;
+  return qNumeric({cat:'chain',text:`Un drone a une autonomie de ${auto} minutes. Si un opérateur souhaite l'utiliser pour ${n} missions de ${mission} minutes chacune, combien de temps d'autonomie restera-t-il après les missions ?`,answer:ans,decimals:0,tol:0,unit:'min',errorType:'autonomie restante négative possible',method:`Temps total des missions = ${n} × ${mission}. Autonomie restante = ${auto} - temps total. Si les missions dépassent l’autonomie, le résultat est négatif.`})
+}
+
+/* ───────────── ÉQUATIONS / PARTAGES ───────────── */
+function genPrimeShare(){
+  const total=pick([7500,9000,10500,12000]); const fixed=pick([30,40,50]); const aMonths=pick([10,11]); const aSal=pick([6200,6900,7200]); const bLess=pick([2,3]); const bSal=pick([7800,8500,9000]); const cDelta=pick([300,400,500]);
+  const A=aMonths*aSal, B=(aMonths-bLess)*bSal, C=12*(aSal-cDelta); const fixedEach=total*fixed/100/3; const variable=total*(100-fixed)/100; const ans=fixedEach+variable*B/(A+B+C);
+  return qNumeric({cat:'share',text:`Une entreprise verse une prime de ${total} €. ${fixed}% de la somme est répartie équitablement comme part fixe. Le reste est proportionnel aux revenus annuels. Albert a travaillé ${aMonths} mois à ${aSal} €/mois. Bernard a travaillé ${bLess} mois de moins qu'Albert à ${bSal} €/mois. Charles a travaillé l'année entière avec un salaire mensuel inférieur de ${cDelta} € à celui d'Albert. Calculer la prime de Bernard.`,answer:ans,decimals:0,tol:3,unit:'€',errorType:'part fixe + part proportionnelle',method:`Part fixe de Bernard = ${fixed}% de ${total} ÷ 3. Reste à répartir : ${100-fixed}% de ${total}. Calcule seulement les revenus et le poids de Bernard : B/(A+B+C).`})
+}
+function genSalaryEquation(){
+  const f=pick([3,4,5]); const bonus=pick([100,200,300]); const frida=pick([900,1000,1060,1200]); const total=frida+f*frida+bonus; const ans=f*frida+bonus;
+  return qNumeric({cat:'share',text:`Henri et Frida comparent leur rémunération. Leur revenu total est de ${total} euros. Henri a perçu son salaire habituel, ${f} fois celui de Frida, plus une prime exceptionnelle de ${bonus} euros. Quel est le salaire de Henri ?`,answer:ans,decimals:0,tol:1,unit:'€',errorType:'équation simple',method:`Pose Frida = x. Henri = ${f}x + ${bonus}. Total : x + ${f}x + ${bonus} = ${total}. Donc x = (${total}-${bonus})/${f+1}, puis Henri = ${f}x + ${bonus}.`})
+}
+function genCoffeeSystem(){
+  const x=pick([6,8,10,12]); const y=pick([14,16,18,20]); const a1=pick([8,10,12]); const b1=pick([10,12,14]); const a2=pick([5,7,9]); const b2=pick([2,3,4]); const total1=a1*x+b1*y; const total2=a2*x+b2*y;
+  return qNumeric({cat:'share',text:`Un marchand a du café de deux qualités. Quand il prend ${a1} kg de la première qualité et ${b1} kg de la seconde, le mélange vaut ${total1} €. Quand il prend ${a2} kg de la première qualité et ${b2} kg de la seconde, le mélange vaut ${total2} €. Quel est le prix de la première qualité ?`,answer:x,decimals:0,tol:0,unit:'€',errorType:'système de deux équations',method:`Pose x = prix de la première qualité et y = prix de la seconde. Système : ${a1}x + ${b1}y = ${total1}, ${a2}x + ${b2}y = ${total2}. Le plus rapide est d’éliminer y en multipliant les équations pour obtenir le même coefficient devant y.`})
+}
+function genAssociation(){
+  const A=pick([150,180,200,240]); const ratio=pick([4,5,6]); const C=pick([120,150,180]); const frac=pick([{l:'2/5',v:2/5},{l:'1/3',v:1/3},{l:'3/8',v:3/8}]); const B=A*ratio; const ans=(A+B+C)/(1-frac.v);
+  return qNumeric({cat:'share',text:`Une association sportive a 4 sections. La section A compte ${A} adhérents, soit les 1/${ratio} de la section B. La section D totalise ${frac.l} du total. La section C rassemble les ${C} adhérents restants. Quel est le total d'adhérents ?`,answer:ans,decimals:0,tol:2,unit:'',errorType:'part inconnue du total',method:`A = ${A}. Si A est 1/${ratio} de B, alors B = ${ratio}×A. A+B+C représente tout sauf D. Or D = ${frac.l} du total, donc A+B+C = 1 - ${frac.l} du total.`})
+}
+function genVacations(){
+  const days=pick([8,10,11,12,15]); const f1={l:'la moitié',v:1/2}; const f2=pick([{l:'un tiers',v:1/3},{l:'un quart',v:1/4},{l:'un cinquième',v:1/5}]); const ans=days/(1-f1.v-f2.v);
+  return qNumeric({cat:'share',text:`Pauline a passé ${f1.l} de ses vacances à la plage, ${f2.l} en Auvergne et ${days} jours à la campagne. Quelle a été la durée totale de ses vacances ?`,answer:ans,decimals:0,tol:1,unit:'jours',errorType:'fraction restante',method:`Pose total = x. Les jours fixes représentent ce qu’il reste après ${f1.l} et ${f2.l}. Donc ${days} = x × (1 - 1/2 - fraction).`})
+}
+function genMarbles(){
+  const M=pick([12,15,18,20]); const j=pick([3,4]); const p=pick([5,6]); const total=Math.round(M+M/j+M/p);
+  return qNumeric({cat:'share',text:`Marc a ${j} fois plus de billes que Jacques et ${p} fois plus que Pierre. Ils ont à eux trois environ ${total} billes. Combien Marc a-t-il de billes ?`,answer:M,decimals:0,tol:1,unit:'',errorType:'prendre Marc comme référence',method:`Prends Marc comme référence : Jacques = Marc/${j}, Pierre = Marc/${p}. En QCM, teste les réponses : M + M/${j} + M/${p} doit être proche du total.`})
+}
+
+/* ───────────── PIÈGES D’ÉNONCÉ ───────────── */
+function genTrap(){
+  const bank=[
+    {text:'L’énoncé dit : “il abat 59% des pommiers”. On demande combien il reste.',answer:'Calculer 41% des pommiers',options:['Calculer 59% des pommiers','Calculer 41% des pommiers','Multiplier par 1,59','Diviser par 59'],method:'Si on cherche ce qui reste, on fait 100% - pourcentage enlevé.'},
+    {text:'L’énoncé dit : “il consomme 2/3 du contenu de départ”.',answer:'Calculer sur la quantité initiale',options:['Calculer sur la quantité restante','Calculer sur la quantité initiale','Diviser la quantité finale par 2/3','Ignorer cette fraction'],method:'Mot-clé : contenu de départ. Toutes les fractions se rapportent au total initial.'},
+    {text:'Une allée de 2 m de large entoure une pelouse dans un rectangle.',answer:'Enlever 4 m à la longueur et 4 m à la largeur',options:['Enlever 2 m à la longueur seulement','Enlever 2 m à chaque dimension au total','Enlever 4 m à la longueur et 4 m à la largeur','Multiplier le périmètre par 2'],method:'Il y a 2 m de chaque côté : gauche + droite = 4 m, haut + bas = 4 m.'},
+    {text:'Une bouteille contient 50 cl et tu as un volume en litres.',answer:'Multiplier les litres par 2',options:['Diviser les litres par 2','Multiplier les litres par 2','Multiplier les litres par 50','Diviser les litres par 50'],method:'50 cl = 0,5 L. Le nombre de bouteilles est donc litres / 0,5 = litres × 2.'},
+    {text:'Une durée contient “1 h 48 min”.',answer:'Convertir en 1,8 h',options:['Convertir en 1,48 h','Convertir en 1,8 h','Convertir en 108 h','Ajouter 48 à la vitesse'],method:'48 min = 48/60 = 0,8 h. Donc 1 h 48 = 1,8 h.'},
+    {text:'Un trajet prévu fait 2000 km, mais l’avion a déjà parcouru 2300 km.',answer:'La distance restante est négative',options:['La distance restante est négative','Il reste 300 km','Il faut ignorer les 300 km en trop','Il faut diviser 2300 par 2000'],method:'Si la distance parcourue dépasse la distance totale, le reste = total - parcouru devient négatif.'},
+    {text:'Une capacité doit atteindre +60% après avoir déjà augmenté de +5%.',answer:'Calculer la nouvelle hausse sur la capacité déjà augmentée',options:['Ajouter simplement 55%','Calculer la nouvelle hausse sur la capacité déjà augmentée','Multiplier 60 par 5','Soustraire les litres finaux'],method:'Les pourcentages successifs ne s’additionnent pas directement quand la base change.'},
+    {text:'Un modèle réduit mesure 9 cm et le bâtiment réel 24,75 m.',answer:'Convertir le réel en cm avant le rapport',options:['Diviser 24,75 par 9 directement','Convertir le réel en cm avant le rapport','Convertir la maquette en mètres puis multiplier','Additionner les deux hauteurs'],method:'Pour une échelle, les deux longueurs doivent être dans la même unité.'}
+  ];
+  const x=pick(bank); return qText({cat:'trap',text:`Réflexe rapide :\n${x.text}\nQuelle opération faut-il choisir ?`,answer:x.answer,options:x.options,errorType:'lecture d’énoncé',method:x.method})
+}
+
+
+/* ───────────── MATHS 1 — PROBLÈMES LONGS EOPN ───────────── */
+function timeOptions(ansMin){
+  const vals=[];
+  function add(v){v=Math.max(0,Math.round(v)); if(!vals.includes(v))vals.push(v)}
+  add(ansMin);
+  [ansMin+7,ansMin-7,ansMin+16,ansMin-16,ansMin+25,ansMin-25,ansMin+40,ansMin-40].forEach(add);
+  return shuffle(vals.slice(0,5).map(v=>hmin(v)));
+}
+function qTime(obj){obj.kind='text'; obj.answer=hmin(obj.minutes); obj.options=timeOptions(obj.minutes); obj.choices=shuffle(obj.options.map(o=>({label:o,correct:o===obj.answer}))); return obj}
+function genM1Pompes(){
+  const group=pick([36,40,45,50]); const eopn=pick([25,30,35,40]); const pumps=pick([25,32,35,41]); const days=pick([14,17,20,21]);
+  const non=group*(1-eopn/100); const ans=2*non*pumps*days;
+  return qNumeric({cat:'chain',text:`Pendant la FMI, la promotion est répartie en trois groupes égaux. Votre groupe compte ${group} personnes, dont les EOPN représentent ${eopn}% du groupe et chaque personne doit effectuer ${pumps} pompes par jour.\nCombien de pompes seront effectuées en ${days} jours par les personnes des groupes 2 et 3 qui n’ont pas été retenues EOPN ?`,answer:ans,decimals:0,tol:1,unit:'pompes',errorType:'pourcentage + groupes + jours',method:`EOPN par groupe = ${eopn}% de ${group}. Non EOPN par groupe = ${group} - EOPN. On veut les groupes 2 et 3 : multiplier par 2, puis par ${pumps} pompes/jour et par ${days} jours.`})
+}
+function genM1Landing(){
+  const base=pick([700,800,900,1000]); const wind=pick([20,25,30,35]); const step=5; const red=pick([5,6,7,8]); const wet=pick([8,10,12,15]);
+  const ans=base*(1-(wind/step*red)/100)*(1+wet/100);
+  return qNumeric({cat:'percent',text:`Un Alphajet se pose sur une piste avec un vent de face de ${wind} kt. Sans vent, sa distance d’atterrissage est de ${base} m. Chaque tranche de ${step} kt de vent de face réduit la distance de ${red}%. La piste est mouillée, ce qui augmente la distance de ${wet}%. Quelle distance d’atterrissage sera nécessaire ?`,answer:ans,decimals:0,tol:2,unit:'m',errorType:'réduction puis majoration',method:`Nombre de tranches = ${wind}/${step}. Réduction totale = tranches × ${red}%. Appliquer d’abord le vent : distance × (1 - réduction), puis piste mouillée : × (1 + ${wet}%).`})
+}
+function genM1A400FuelKg(){
+  const dist=pick([5600,6200,6800,7200]); const speed=pick([350,400,450]); const Lh=pick([2100,2300,2500]); const density=pick([0.78,0.8,0.82]); const hold=pick([15,20,25]); const p1=pick([10,12,15]); const p2=pick([10,15,20]);
+  const kg=Lh*density; const cruise=dist/speed*4*kg; const wait=hold/60*4*kg; const phase3=15/60*3*kg*(1+p1/100); const phase2=15/60*2*kg*(1+p1/100)*(1+p2/100); const ans=cruise+wait+phase3+phase2;
+  return qNumeric({cat:'chain',text:`Un A400M doit parcourir ${dist} NM. En croisière sur ses 4 moteurs, sa vitesse sol est de ${speed} kt et chaque moteur consomme ${Lh} L/h. Le carburant a une densité de ${fmt(density,2)} kg/L. À l'arrivée, l'avion attend ${hold} min sur ses 4 moteurs. Il perd un moteur : pendant 15 min il vole sur 3 moteurs, la consommation de chaque moteur restant augmente de ${p1}%. Puis il perd un 2e moteur : pendant 15 min il vole sur 2 moteurs, avec une nouvelle augmentation de ${p2}%. Quelle est, en kg, la masse totale de carburant consommée ?`,answer:ans,decimals:0,tol:80,unit:'kg',errorType:'phases moteur + densité',method:`Convertis d’abord ${Lh} L/h en kg/h : × densité. Puis additionne les phases : croisière = ${dist}/${speed} h × 4 moteurs ; attente = ${hold}/60 h × 4 ; phase 3 moteurs avec +${p1}% ; phase 2 moteurs avec les deux majorations successives.`})
+}
+function genM1MarathonWater(){
+  const km=pick([55,67,73,80]); const start=pick([11,13,15]); const every=pick([2,3]); const participants=pick([900,1300,1600,1900]); const extra=pick([10,15,20,30]);
+  const stops=Math.floor((km-start)/every)+1; const ans=stops*participants*(1+extra/100);
+  return qNumeric({cat:'chain',text:`Un marathon de ${km} km comporte des ravitaillements tous les ${every} km à partir du ${start}e kilomètre. Chaque coureur boit une bouteille à chaque ravitaillement. Il y a ${participants} participants et il faut prévoir ${extra}% de bouteilles supplémentaires. Combien de bouteilles faut-il prévoir ?`,answer:ans,decimals:0,tol:2,unit:'bouteilles',errorType:'comptage de points + majoration',method:`Nombre de ravitaillements = floor((${km} - ${start})/${every}) + 1, car on compte aussi le ravitaillement de départ. Puis × participants, puis × (1 + ${extra}%).`})
+}
+function genM1CubeBoxes(){
+  const side=pick([20,22,25,30]); const n=pick([80,95,105,120]); const carton=pick([0.2,0.25,0.3]); const edge=pick([0.2,0.3,0.4]); const labor=pick([4,5,6,8]);
+  const per=6*side*side*carton+12*edge+labor; const ans=per*n;
+  return qNumeric({cat:'geometry',text:`Une entreprise fabrique des boîtes cubiques de ${side} cm de côté. Le coût comprend le carton (${fmt(carton,2)} €/cm² de surface extérieure), les adhésifs (${fmt(edge,2)} € par arête) et la main-d'œuvre (${labor} € par boîte). Combien coûtera la production de ${n} boîtes ?`,answer:ans,decimals:0,tol:2,unit:'€',errorType:'surface d’un cube + coût unitaire',method:`Surface extérieure d’un cube = 6 × côté². Arêtes = 12. Coût par boîte = carton + 12×adhésif + main-d’œuvre. Puis multiplier par ${n}.`})
+}
+function genM1TrainIncident(){
+  const dist=pick([1200,1350,1450,1500]); const v=pick([270,300,320]); const red=pick([20,35,55]); const mins=pick([30,36,45]); const inc=pick([60,80,90]);
+  const first=dist/3; const t1=first/v; const vRed=v*(1-red/100); const tRed=mins/60; const dRed=vRed*tRed; const remaining=dist-first-dRed; const tFast=remaining/(v*(1+inc/100)); const total=(t1+tRed+tFast)*60;
+  return qTime({cat:'speed',text:`Un TGV relie deux villes distantes de ${dist} km. Il parcourt le premier tiers du trajet à ${v} km/h. Suite à un incident, il réduit sa vitesse de ${red}% pendant ${mins} minutes. Pour respecter l'horaire prévu, il accélère ensuite de ${inc}% par rapport à sa vitesse initiale sur le reste du trajet. Quelle est la durée totale du voyage ?`,minutes:total,errorType:'trajet en phases',method:`Premier tiers : distance/3 puis temps = d/v. Phase réduite : vitesse = ${v}×(1-${red}%), temps = ${mins} min, donc distance parcourue = v réduite × temps. Le reste se fait à ${v}×(1+${inc}%). Additionne les trois temps.`})
+}
+function genM1A400FuelLitres(){
+  const Lh=pick([2800,3000,3100]); const h=pick([5,6,7]); const m3=pick([30,40,45]); const inc1=pick([10,15,20]); const m2=pick([18,22,30]); const inc2=pick([30,50]);
+  const p1=4*Lh*h; const p2=3*Lh*(1+inc1/100)*m3/60; const p3=2*Lh*(1+inc1/100)*(1+inc2/100)*m2/60; const ans=p1+p2+p3;
+  return qNumeric({cat:'chain',text:`Un A400M vole ${String(h).padStart(2,'0')}h00m avec ses 4 moteurs. Chaque moteur consomme ${Lh} L/h. Après une avarie, il continue ${m3} min avec 3 moteurs, dont la consommation individuelle augmente de ${inc1}%. Après une seconde avarie, il vole encore ${m2} min avec 2 moteurs, dont la consommation individuelle augmente à nouveau de ${inc2}%. Quelle quantité totale de carburant est consommée ?`,answer:ans,decimals:0,tol:50,unit:'L',errorType:'phases moteur en litres',method:`Additionne les phases : 4×${Lh}×${h}, puis 3×${Lh}×(1+${inc1}%)×${m3}/60, puis 2 moteurs avec la nouvelle majoration ×${m2}/60.`})
+}
+function genM1SpeedFraction(){
+  const num=pick([4,5,7]); const den=pick([8,9,10]); const measured=pick([300,350,360,420]); const target=pick([30,40,50,60]);
+  const v=measured*den/num; const ans=v*target/100;
+  return qNumeric({cat:'share',text:`Lors d’un exercice de navigation, un pilote remarque que ${num}/${den} de sa vitesse correspondent exactement à ${measured} m/s. À combien correspond ${target}% de sa vitesse ?`,answer:ans,decimals:1,tol:0.5,unit:'m/s',errorType:'fraction de vitesse',method:`Si ${num}/${den} de V = ${measured}, alors V = ${measured} × ${den}/${num}. Puis ${target}% = multiplier par ${target}/100.`})
+}
+function genM1MarathonGels(){
+  const km=pick([42,50,55,60]); const calKm=pick([12,15,18]); const waterKm=pick([18,20,22]); const calGel=pick([20,25,30]); const waterGel=pick([12,15,18]);
+  const gels=Math.ceil(km*calKm/calGel); const ans=km*waterKm-gels*waterGel;
+  return qNumeric({cat:'chain',text:`Un marathonien consomme ${calKm} calories/km et ${waterKm} cl d'eau/km sur ${km} km. Chaque gel énergétique apporte ${calGel} calories et ${waterGel} cl d'eau. Combien de cl d'eau devra-t-il boire en plus des gels ?`,answer:ans,decimals:0,tol:2,unit:'cl',errorType:'arrondi supérieur + complément',method:`Calories totales = ${km}×${calKm}. Nombre de gels = calories ÷ ${calGel}, arrondi au supérieur. Eau nécessaire = ${km}×${waterKm}. Eau apportée par les gels = gels×${waterGel}. Complément = besoin - apport.`})
+}
+function genM1Smoke(){
+  const figs=pick([7,8,9,10]); const sec=pick([30,35,40,45]); const rate=pick([0.8,1,1.2]); const start=pick([60,70,80]);
+  const used=figs*sec/60*rate; const ans=start-used;
+  return qNumeric({cat:'chain',text:`Un show aérien comprend ${figs} figures. Chaque figure dure ${sec} secondes, pendant lesquelles chaque avion active son fumigène à ${fmt(rate,1)} L/min. Chaque avion embarque ${start} L. Combien restera-t-il en moyenne par avion à la fin du show ?`,answer:ans,decimals:2,tol:0.08,unit:'L',errorType:'temps utile seulement',method:`Les repositionnements ne consomment pas de fumigène. Temps de fumée = ${figs}×${sec}/60 minutes. Consommation par avion = temps × ${fmt(rate,1)} L/min. Restant = ${start} - consommation.`})
+}
+function genM1Helicopter(){
+  const outMin=pick([25,30,35]); const v=pick([240,250,260]); const hover=pick([10,15,20]); const inc=pick([40,50]); const speedRed=pick([20,30]); const cons=pick([650,700,750]); const tank=pick([2600,2700,3000]);
+  const d=outMin/60*v; const out=cons*outMin/60; const stat=cons*(1+inc/100)*hover/60; const retTime=d/(v*(1-speedRed/100)); const ret=cons*retTime; const ans=tank-out-stat-ret;
+  return qNumeric({cat:'speed',text:`Un hélicoptère vole ${outMin} min à ${v} km/h pour rejoindre une zone de détresse. Il effectue ${hover} min de vol stationnaire, ce qui augmente sa consommation de ${inc}%. Il rentre ensuite à la base, mais sa vitesse est réduite de ${speedRed}% par rapport à l'aller. Sa consommation normale est de ${cons} L/h et son réservoir contient ${tank} L. Combien de litres restera-t-il à l'atterrissage ?`,answer:ans,decimals:0,tol:3,unit:'L',errorType:'aller-retour avec vitesse réduite',method:`Distance aller = temps×vitesse. Consommation aller = ${cons}×temps. Stationnaire = ${cons}×(1+${inc}%)×temps. Retour : même distance, vitesse réduite à ${100-speedRed}% donc temps plus long. Restant = réservoir - total consommé.`})
+}
+function genM1Textile(){
+  const rollL=pick([20,25,30]); const rollW=pick([2,2.5,3]); const n=pick([200,250,300]); const side=pick([1.5,2,2.5]); const loss=pick([15,20,25,30]);
+  const need=n*side*side*(1+loss/100); const roll=rollL*rollW; const ans=Math.ceil(need/roll);
+  return qNumeric({cat:'geometry',text:`Une entreprise produit des rouleaux de tissu de ${rollL} m de long et ${fmt(rollW,1)} m de large. Elle reçoit une commande de ${n} nappes carrées de ${fmt(side,1)} m de côté. Il y a une perte de ${loss}% lors de la découpe. Combien de rouleaux seront nécessaires ?`,answer:ans,decimals:0,tol:0,unit:'rouleaux',errorType:'surface + perte + arrondi supérieur',method:`Surface nappes = ${n}×côté². Ajouter ${loss}% de perte. Surface d’un rouleau = ${rollL}×${fmt(rollW,1)}. Nombre = surface nécessaire / surface rouleau, puis arrondir au supérieur.`})
+}
+function genM1RouteDelay(){
+  const prev=pick([220,260,300]); const speed=pick([260,290,320]); const seg1=pick([100,120,140]); const seg2=pick([120,140,160]); const seg3=pick([160,180,200]);
+  const real=seg1+seg2+seg3; const ans=(real-prev)/speed*60;
+  return qNumeric({cat:'speed',text:`Un avion prévoit d’effectuer ${prev} km en ligne droite à ${speed} km/h. Son plan de vol est modifié en trois segments : ${seg1} km, ${seg2} km et ${seg3} km. Il conserve la même vitesse. Avec combien de minutes de retard arrivera-t-il ?`,answer:ans,decimals:0,tol:1,unit:'min',errorType:'différence de distance / vitesse',method:`Nouveau trajet = ${seg1}+${seg2}+${seg3}. Retard = (nouvelle distance - distance prévue) / vitesse. Convertis en minutes : ×60.`})
+}
+function genM1CampWater(){
+  const pop=pick([300,360,420]); const stock=pick([1000,1200,1500]); const childPct=pick([5,6,8]); const missionPct=pick([10,14,18]); const missionInc=pick([10,15,20]); const childLess=pick([5,7,10]); const days=pick([14,21]); const fuel=pick([36000,43000]); const consKm=pick([25,30,40]); const speed=pick([50,60]);
+  const children=Math.round(pop*childPct/100); const adults=pop-children; const adultsMission=Math.round(adults*missionPct/100); const daily=adultsMission*(1+missionInc/100)+(adults-adultsMission)+children*(1-childLess/100); const need=daily*days; const travelDays=(fuel/consKm/speed)/24; const ans=stock-daily*travelDays+need;
+  return qNumeric({cat:'chain',text:`Un camp abrite ${pop} personnes et dispose de ${stock} L d'eau. Chaque jour, ${missionPct}% des adultes partent en mission et consomment ${missionInc}% de plus. Les enfants représentent ${childPct}% du camp et consomment ${childLess}% de moins qu'un adulte. Une personne normale consomme 1 L/jour. Il faut planifier ${days} jours de ravitaillement. Le transport nécessite ${fuel} kg de carburant, avec ${consKm} L/km à ${speed} km/h. Combien de litres d'eau le camp aura-t-il après le ravitaillement ?`,answer:ans,decimals:1,tol:4,unit:'L',errorType:'long problème à étapes',method:`Calcule la consommation quotidienne : adultes en mission, autres adultes, enfants. Besoin ravitaillement = quotidien × ${days}. Le transport prend (carburant/conso km)/vitesse heures, donc une petite fraction de jour consommée avant arrivée. Eau finale = stock - eau consommée pendant le trajet + besoin.`})
+}
+function genM1Beekeeper(){
+  const hives=pick([24,30,36]); const kg=pick([30,36,37,40]); const loss=pick([25,30,40]); const pot=pick([100,500,700]); const price=pick([7,8,9]); const target=pick([22000,24500,25500]); const fee=pick([90,120]);
+  const prod=hives*kg*(1-loss/100); const pots=Math.floor(prod*1000/pot); const revenue=pots*price; const needed=target+hives*fee; const ans=Math.ceil((needed-revenue)/price);
+  return qNumeric({cat:'chain',text:`Un apiculteur dispose de ${hives} ruches. Chaque ruche produit ${kg} kg de miel/an, mais il perd ${loss}% de sa production. Il vend en pots de ${pot} g à ${price} € le pot. Il vise un bénéfice net de ${target} € après frais d'entretien de ${fee} € par ruche. Combien de pots manquants sont nécessaires ?`,answer:ans,decimals:0,tol:1,unit:'pots',errorType:'revenu manquant parfois négatif',method:`Production après perte = ruches×kg×(1-${loss}%). Convertir en pots : kg×1000/${pot}. Revenu actuel = pots×${price}. Revenu nécessaire = bénéfice net + frais. Pots manquants = (nécessaire - actuel)/prix ; peut être négatif si la production dépasse l’objectif.`})
+}
+function genM1BrickWall(){
+  const bh=pick([0.05,0.07,0.1]); const bl=pick([0.2,0.23,0.25]); const rows=pick([12,15,18]); const cols=pick([18,22,24]); const wallH=round(rows*bh,2); const wallL=round(cols*bl,2); const startH=pick([5,6,7]); const startM=pick([0,9,15,30]); const rate=pick([80,90,100]); const before=pick([60,80,100]); const pause=pick([10,15,20]); const slow=pick([10,15,20]);
+  const total=rows*cols; const t1=before/rate; const t2=(total-before)/(rate*(1-slow/100)); const finish=startH*60+startM+(t1*60)+pause+(t2*60);
+  return qTime({cat:'geometry',text:`Un constructeur doit construire un mur de ${fmt(wallH,2)} m de hauteur et ${fmt(wallL,2)} m de longueur. Chaque brique mesure ${fmt(bh,2)} m de haut et ${fmt(bl,2)} m de long. Il commence à ${String(startH).padStart(2,'0')}h${String(startM).padStart(2,'0')}m et pose ${rate} briques/h. Après ${before} briques, il prend ${pause} min de pause, puis son rythme ralentit de ${slow}%. À quelle heure terminera-t-il ?`,minutes:finish,errorType:'nombre de briques + horaire',method:`Nombre de briques = (hauteur mur/hauteur brique) × (longueur mur/longueur brique). Temps avant pause = ${before}/${rate}. Reste à poser au rythme ${rate}×(1-${slow}%). Ajoute l’heure de départ et la pause.`})
+}
+function genM1DropZone(){
+  const zone=pick([2.5,3,3.5]); const delay=pick([400,600,800]); const speed=pick([170,190,210]); const interval=pick([1,2]);
+  const useful=zone*1000-delay; const ms=speed*1000/3600; const ans=Math.floor(useful/ms/interval);
+  return qNumeric({cat:'speed',text:`Un avion de largage survole une zone de ${fmt(zone,1)} km à ${speed} km/h. Suite à une erreur, les sauts ne débutent qu'après ${delay} m dans la zone. Combien de parachutistes pourront sauter s'il y a un saut toutes les ${interval} seconde(s) ?`,answer:ans,decimals:0,tol:0,unit:'parachutistes',errorType:'vitesse km/h vers m/s + arrondi inférieur',method:`Zone utile = ${fmt(zone,1)} km en mètres - ${delay}. Convertis ${speed} km/h en m/s : ×1000/3600. Temps utile = distance/vitesse. Nombre de sauts = temps / intervalle, arrondi à l’inférieur.`})
+}
+function genM1OrchardProduction(){
+  const L=pick([70,80,90]); const W=pick([55,65,75]); const space=pick([2,3]); const border=pick([2,3,4]); const kg=pick([150,190,210]);
+  const nL=Math.floor((L-2*border)/space)+1; const nW=Math.floor((W-2*border)/space)+1; const ans=nL*nW*kg;
+  return qNumeric({cat:'geometry',text:`Un fermier possède un champ de ${L} m par ${W} m. Il plante des pommiers tous les ${space} m en laissant une bordure de ${border} m sur tout le périmètre. Chaque arbre produit ${kg} kg/an. Quelle sera la production annuelle totale ?`,answer:ans,decimals:0,tol:0,unit:'kg',errorType:'grille + bordure + +1',method:`Dimensions utilisables = L-2×bordure et l-2×bordure. Nombre d’arbres sur une ligne = floor(longueur utilisable / espacement) + 1. Même chose en largeur. Production = arbres totaux × ${kg}.`})
+}
+function genM1DelaySegments(){
+  const schedH=pick([14,15,16]); const schedM=pick([20,27,35]); const totalDelay=pick([126,156,180]); const r1=pick([20,25,30]); const num=pick([4,5]); const den=pick([7,8]); const r3=(totalDelay-r1)*den/(den+num);
+  return qTime({cat:'share',text:`Un avion devait arriver à ${String(schedH).padStart(2,'0')}h${String(schedM).padStart(2,'0')}m, mais il arrive avec ${hmin(totalDelay)} de retard. Sur le premier tronçon, il avait ${r1} min de retard. Sur le deuxième tronçon, son retard représente les ${num}/${den} du retard du troisième tronçon. Quel est le retard du troisième tronçon ?`,minutes:r3,errorType:'retard total + fraction',method:`Retard total = R1 + R2 + R3, avec R2 = ${num}/${den} R3. Donc ${r1} + (${num}/${den})R3 + R3 = retard total. Regrouper R3 : (1 + ${num}/${den})R3.`})
+}
+function genM1Interception(){
+  const kt=pick([500,550,600]); const delay=pick([3,4,5]); const init=pick([120,150,180]); const intr=pick([180,200,220]); const border=pick([400,450,500]);
+  const v=kt*1.852; const intrDelay=intr*delay/60; const gap=init+intrDelay; const t=gap/(v-intr); const distIntr=intrDelay+t*intr; const ans=border-distIntr;
+  return qNumeric({cat:'speed',text:`Deux Mirage décollent ${delay} min après l'alerte et volent à ${kt} kt pour intercepter un aéronef détecté à ${init} km de la base, se dirigeant vers la frontière à ${intr} km/h. La frontière est à ${border} km de la position initiale de l'intrus. À quelle distance de la frontière sera l'intrus à l'interception ? (1 kt = 1,852 km/h)`,answer:ans,decimals:2,tol:0.5,unit:'km',errorType:'vitesse relative + délai',method:`Convertis les kt en km/h. Pendant le délai, l’intrus avance : ${intr}×${delay}/60. Distance à rattraper au décollage = distance initiale + avance. Temps d’interception = distance / (vitesse Mirage - vitesse intrus). Puis calcule l’avance totale de l’intrus et retire-la de la distance à la frontière.`})
+}
+function genM1BoatMap(){
+  const scale=pick([80000,90000,100000]); const cm=pick([35,42,49]); const kt=pick([14.5,16.9,18]); const stop=pick([30,40,50]); const bad=pick([5,7,9]); const red=pick([30,45]); const inc=pick([30,50]); const startH=pick([8,9,11]); const startM=pick([0,30]);
+  const dist=cm*scale/100000; const v=kt*1.852; const t=bad/(v*(1-red/100))+(dist-bad)/(v*(1+inc/100))+stop/60; const finish=startH*60+startM+t*60;
+  return qTime({cat:'units',text:`Un navigateur utilise une carte à l'échelle 1:${scale}. Sur la carte, la distance est de ${cm} cm. Son bateau avance à ${fmt(kt,1)} kt. Il prévoit une escale de ${stop} min. Un courant défavorable réduit sa vitesse de ${red}% pendant les premiers ${bad} km, puis un courant favorable augmente sa vitesse de ${inc}% pour le reste. Départ à ${String(startH).padStart(2,'0')}h${String(startM).padStart(2,'0')}m. À quelle heure arrivera-t-il ? (1 kt = 1,852 km/h)`,minutes:finish,errorType:'échelle + kt + phases',method:`Distance réelle = cm × échelle en cm, puis /100000 pour km. Convertis les kt en km/h. Temps = ${bad} km à vitesse réduite + reste à vitesse augmentée + escale. Ajoute à l’heure de départ.`})
+}
+function genM1TrainProfit(){
+  const passengers=pick([300,345,400]); const p1=pick([100,110,120]); const p2=pick([90,105,130]); const p3=passengers-p1-p2; const price1=pick([220,250]); const price2=pick([160,180]); const price3=pick([90,105]); const km=pick([120,150,180]); const cons=pick([0.7,0.9]); const fuel=pick([1.6,1.8,2]);
+  const revenue=p1*price1+p2*price2+p3*price3; const cost=cons*passengers*km*fuel; const ans=revenue-cost;
+  return qNumeric({cat:'chain',text:`Un train transporte ${passengers} passagers : ${p1} en première classe à ${price1} €, ${p2} en deuxième classe à ${price2} € et le reste en troisième classe à ${price3} €. Le trajet fait ${km} km. Le train consomme ${fmt(cons,1)} L/km/passager et le carburant coûte ${fmt(fuel,1)} €/L. Quel bénéfice réalise la compagnie ?`,answer:ans,decimals:0,tol:2,unit:'€',errorType:'recettes - coût variable',method:`Recettes = somme des billets par classe. Troisième classe = total - première - deuxième. Coût carburant = conso × passagers × km × prix/L. Bénéfice = recettes - coût, parfois négatif.`})
+}
+function genM1Concrete(){
+  const L=pick([6,7,8]); const W=pick([4,5,6]); const thick=pick([10,11,12]); const mixer=pick([0.4,0.45,0.5]); const bag=pick([0.1,0.125]);
+  const vol=L*W*thick/100; const mixers=Math.ceil(vol/mixer); const cementPer=mixer*(1/(1+2+1.5+0.5)); const ans=Math.ceil(mixers*cementPer/bag);
+  return qNumeric({cat:'geometry',text:`Une entreprise doit refaire un parking rectangulaire de ${L} m par ${W} m et ${thick} cm d'épaisseur. Dans une bétonnière de ${fmt(mixer,2)} m³, le mélange est : 1 volume de ciment, 2 de sable, 1,5 de gravier et 0,5 d'eau. Un sac de ciment représente ${fmt(bag,3)} m³. Combien de sacs de ciment faut-il ?`,answer:ans,decimals:0,tol:0,unit:'sacs',errorType:'volume + proportion de mélange + arrondis',method:`Volume béton = L×l×épaisseur en mètres. Nombre de bétonnières = volume / capacité, arrondi supérieur. Le ciment représente 1/(1+2+1,5+0,5)=1/5 du mélange. Volume ciment total = bétonnières×capacité×1/5. Sacs = volume ciment / volume par sac, arrondi supérieur.`})
+}
+function genM1RoadWorks(){
+  const total=pick([14,16,18]); const first=pick([5,6]); const second=pick([5,6]); const speed=pick([4,5,6]); const red1=pick([20,30]); const red2=pick([10,12,15]); const pause=pick([1,1.5]); const startH=pick([8,9,11]); const startM=pick([0,10,20]);
+  const last=total-first-second; const t=first/speed+second/(speed*(1-red1/100))+last/(speed*(1-red1/100)*(1-red2/100))+pause; const finish=startH*60+startM+t*60;
+  return qTime({cat:'speed',text:`Une équipe construit une route de ${total} km. Début à ${String(startH).padStart(2,'0')}h${String(startM).padStart(2,'0')}m. Elle progresse à ${speed} km/h sur les ${first} premiers km, puis sa vitesse est réduite de ${red1}% pour les ${second} km suivants. Pour les ${last} derniers km, elle est encore réduite de ${red2}% par rapport à la vitesse précédente. Pause déjeuner : ${fmt(pause,1)} h. À quelle heure finit-elle ?`,minutes:finish,errorType:'vitesses successives + pause',method:`Temps = distance/vitesse pour chaque segment. Segment 2 : vitesse = ${speed}×(1-${red1}%). Segment 3 : appliquer encore -${red2}% sur la vitesse précédente. Ajoute la pause puis l’heure de départ.`})
+}
+/* ───────────── MATHS 3 — PROBLÈMES AVIATION / MISSIONS ───────────── */
+function genM3AverageSpeedSegments(){
+  const v=pick([320,345,360,380]); const d1=pick([180,210,230,250]); const d2=pick([240,270,300]); const d3=pick([180,230,260]); const red=pick([10,15,20,25]);
+  const total=d1+d2+d3; const t=d1/v+d2/v+d3/(v*(1-red/100)); const ans=total/t;
+  return qNumeric({cat:'speed',text:`Un avion réalise un trajet entre 4 points. Il parcourt A-B (${d1} km) à ${v} km/h, puis B-C (${d2} km) à la même vitesse. Une panne moteur l'oblige à diminuer sa vitesse de ${red}% pour finir jusqu'au point D situé à ${d3} km. Quelle est sa vitesse moyenne sur l'ensemble du trajet ?`,answer:ans,decimals:0,tol:2,unit:'km/h',errorType:'vitesse moyenne en plusieurs segments',method:`Ne fais pas la moyenne des vitesses. Calcule le temps de chaque segment : ${d1}/${v}, ${d2}/${v}, puis ${d3}/(${v}×(1-${red}%)). Vitesse moyenne = distance totale / temps total.`})
+}
+function genM3Tanker(){
+  const f15=pick([1200,1300,1400]); const mirPct=pick([15,20,25]); const engines=4; const cons=pick([240,270,300]); const flow=pick([20,25,30]); const pause=pick([20,30]);
+  const mir=f15*(1+mirPct/100); const delivered=f15+2*mir; const tankMin=f15/flow+2*(mir/flow)+2*pause; const tanker=engines*cons*(tankMin/60); const ans=delivered+tanker;
+  return qNumeric({cat:'chain',text:`Un ravitailleur doit ravitailler 1 F-15 et 2 Mirage. Le F-15 prendra ${f15} L et chaque Mirage ${mirPct}% de plus. Le ravitailleur consomme ${cons} L/h par moteur (${engines} moteurs). Le débit est de ${flow} L/min et il y a ${pause} min entre deux ravitaillements. Combien de litres de carburant seront utilisés au total pendant l'opération ?`,answer:ans,decimals:0,tol:5,unit:'L',errorType:'ravitaillement + consommation pendant durée',method:`Total livré = F-15 + 2×Mirage. Temps de ravitaillement = volumes/débit + 2 intervalles. Pendant ce temps, le ravitailleur consomme ${engines}×${cons} L/h. Total utilisé = carburant livré + carburant consommé par le ravitailleur.`})
+}
+function genM3PhotoMission(){
+  const total=pick([900,1000,1100,1200]); const cruise=pick([280,300,320]); const zone=pick([250,300,350]); const red=pick([35,45,50]); const missionH=pick([1,1.25]); const returnV=pick([450,500,520]); const startH=pick([3,4,5]);
+  const redV=cruise*(1-red/100); const missionDist=redV*missionH; const remaining=total-2*zone-missionDist; const t=zone/cruise+missionH+Math.max(0,remaining)/cruise+zone/returnV; const finish=startH*60+t*60;
+  return qTime({cat:'speed',text:`Pour une mission photo de ${total} km, un Pilatus vole à ${cruise} km/h. La zone de mission est à ${zone} km. Pour éviter les photos floues, il réduit sa vitesse de ${red}% pendant ${fmt(missionH,2)} h. Une fois la mission terminée, il rentre à ${returnV} km/h. S'il décolle à ${String(startH).padStart(2,'0')}h00m, à quelle heure atterrira-t-il ?`,minutes:finish,errorType:'mission découpée en phases',method:`Temps aller = ${zone}/${cruise}. Pendant la mission lente, vitesse = ${cruise}×(1-${red}%). Cette phase couvre une partie de la distance totale. Distance restante de mission = total - aller - retour - distance lente. Additionne : aller + phase lente + reste à vitesse normale + retour.`})
+}
+function genM3MaxFuelMass(){
+  const maxT=pick([29.7,32.5,34.4,38.2]); const pax=pick([64,80,96,117]); const kg=pick([63,75,82,92]); const empty=pick([9486,11765,12600,15100]);
+  const ans=maxT*1000-(pax*kg+empty);
+  return qNumeric({cat:'chain',text:`Un transport peut décoller avec une masse de ${fmt(maxT,1)} tonnes et embarquer ${pax} personnes de ${kg} kg chacune. Si sa masse à vide est de ${empty} kg, combien de carburant peut-il emporter ?`,answer:ans,decimals:0,tol:1,unit:'kg',errorType:'masse maximale - passagers - vide',method:`Convertis les tonnes en kg. Masse passagers = ${pax}×${kg}. Carburant = masse max - masse à vide - masse passagers.`})
+}
+function genM3FuelVolumeDensity(){
+  const maxT=pick([29.7,34.4,38]); const pax=pick([80,96,117]); const kg=pick([75,82,92]); const empty=pick([9486,11765,12600]); const density=pick([0.72,0.8,0.85]);
+  const mass=maxT*1000-(pax*kg+empty); const ans=mass/density;
+  return qNumeric({cat:'units',text:`Un Transall peut décoller avec une masse de ${fmt(maxT,1)} tonnes et embarquer ${pax} personnes de ${kg} kg chacune. Sa masse à vide est de ${empty} kg. Quel volume de carburant peut-il emporter si la densité du jour est de ${fmt(density,2)} kg/L ?`,answer:ans,decimals:0,tol:5,unit:'L',errorType:'masse disponible puis densité',method:`Masse carburant = masse maximale - masse à vide - masse passagers. Puis volume = masse / densité.`})
+}
+function genM3WaterBomber(){
+  const waterT=pick([12,15,18]); const loss=pick([120,150,180]); const dist=pick([350,450,520]); const reserve=pick([800,1000,1200]);
+  const lost=dist*loss/100; const ans=waterT*1000-lost-reserve;
+  return qNumeric({cat:'chain',text:`Un bombardier d'eau emporte ${waterT} tonnes d'eau. À cause d'une fuite, il perd ${loss} kg tous les 100 km, et le point de largage est à ${dist} km. Sachant qu'il doit conserver ${reserve} kg à bord, quelle quantité d'eau pourra-t-il larguer ?`,answer:ans,decimals:0,tol:1,unit:'kg',errorType:'perte par 100 km + réserve',method:`Eau initiale = ${waterT}×1000. Perte = ${dist}×${loss}/100. Eau largable = eau initiale - perte - réserve.`})
+}
+function genM3ShipReserve(){
+  const reserve=pick([7,10,12,15]); const cons=pick([140,160,175]); const speed=pick([12,14,16]); const cap=pick([16000,18400,22000]); const dens=pick([0.72,0.8,0.85]);
+  const usable=cap*(1-reserve/100)*dens; const hours=(usable/cons)/60; const ans=speed*hours;
+  return qNumeric({cat:'percent',text:`Un navire doit terminer sa patrouille avec au moins ${reserve}% de sa capacité en réserve. Il consomme ${cons} kg/min à ${speed} nœuds et possède ${cap} L de carburant de densité ${fmt(dens,2)} kg/L. Quelle distance maximale peut-il parcourir avant de devoir rentrer ?`,answer:ans,decimals:2,tol:0.1,unit:'Nm',errorType:'réserve carburant + kg/min + nœuds',method:`Garde ${reserve}% en réserve : carburant utilisable = capacité×(1-${reserve}%). Convertis en kg avec la densité. Temps = kg utilisables / kg par minute, puis en heures. Distance en milles nautiques = vitesse en nœuds × temps en heures.`})
+}
+function genM3Depressurization(){
+  const high=pick([18000,20600,22000]); const low=pick([2500,2800,3000]); const rate=pick([45,49,55]); const react=pick([3,4,5]); const proc=pick([6,8,10]);
+  const ans=(high-low)/rate/60+react+proc;
+  return qNumeric({cat:'speed',text:`Suite à une dépressurisation, un A400M descend à ${rate} m/s. Il était à ${high} m et doit descendre à ${low} m. Le temps de réaction du pilote est de ${react} min et les procédures d'urgence prennent ${proc} min. Combien de temps total prendra la descente ?`,answer:ans,decimals:2,tol:0.05,unit:'min',errorType:'m/s vers minutes + délais',method:`Hauteur à perdre = ${high}-${low}. Temps de descente = hauteur / ${rate} en secondes, puis /60. Ajoute réaction + procédures.`})
+}
+function genM3EngineFailureConsumption(){
+  const engines=pick([2,3,4]); const cons=pick([900,1100,1300]); const speed=pick([500,600,700]); const dist=pick([1200,1500,1800]); const inc=pick([50,70]); const red=pick([40,60]);
+  const half=dist/2; const t1=half/speed; const c1=engines*cons*t1; const t2=half/(speed*(1-red/100)); const c2=(engines-1)*cons*(1+inc/100)*t2; const ans=c1+c2;
+  return qNumeric({cat:'chain',text:`Un avion avec ${engines} moteurs consommant chacun ${cons} L/h à ${speed} km/h effectue ${dist} km. À mi-chemin, un moteur tombe en panne : la consommation des moteurs restants augmente de ${inc}% et la vitesse diminue de ${red}%. Quelle quantité totale de carburant est consommée ?`,answer:ans,decimals:0,tol:10,unit:'L',errorType:'deux phases moteur/vitesse',method:`Phase 1 : moitié de la distance à vitesse normale avec ${engines} moteurs. Phase 2 : moitié restante à vitesse ${speed}×(1-${red}%) avec ${engines-1} moteurs, chacun à consommation ×(1+${inc}%). Total = conso phase 1 + conso phase 2.`})
+}
+function genM3HeliSub(){
+  const distKm=pick([160,200,240]); const heliMph=pick([280,310,340]); const heliGal=pick([2,3]); const subMi=pick([18,25,30]); const subMph=pick([20,28,30]); const subL=pick([24,28,32]); const kmPerMile=pick([1.43,1.609]); const galL=pick([2.3,3.78]);
+  const heliKmh=heliMph*kmPerMile; const heliFuel=distKm/heliKmh*heliGal; const subFuelGal=(subMi/subMph*subL)/galL; const ans=heliFuel+subFuelGal;
+  return qNumeric({cat:'units',text:`Un hélicoptère doit rejoindre un sous-marin situé à ${distKm} km. Il vole à ${heliMph} miles/h et consomme ${heliGal} gallons/h. Le sous-marin poursuit ensuite sa route sur ${subMi} miles à ${subMph} miles/h et consomme ${subL} L/h. Quelle quantité totale de carburant faut-il en gallons ? (${fmt(kmPerMile,3)} km = 1 mile ; 1 gallon = ${fmt(galL,2)} L)`,answer:ans,decimals:2,tol:0.1,unit:'G',errorType:'unités miles/km/gallons',method:`Convertis la vitesse hélico en km/h avec le facteur donné. Carburant hélico = temps×gallons/h. Carburant sous-marin = temps×L/h, puis convertis les litres en gallons. Additionne.`})
+}
+function genM3MapFuelLiters(){
+  const cons=pick([150,170,200,320]); const scale=pick([1900000,2500000,4600000]); const h=pick([1,1.25,2,2.25]); const v=pick([450,500,520]);
+  const dist=v*h; const cm=dist*100000/scale; const ans=cm*cons;
+  return qNumeric({cat:'units',text:`Un hélicoptère consomme ${cons} litres par centimètre sur une carte au 1/${scale}. Pour sa mission, il volera ${hmin(h*60)} à ${v} km/h. Quelle quantité de carburant devra-t-il emporter ?`,answer:ans,decimals:0,tol:5,unit:'L',errorType:'distance réelle vers distance carte',method:`Distance réelle = temps×vitesse. Convertis en cm réels : km×100000, puis divise par l’échelle pour obtenir les cm sur la carte. Carburant = cm carte × ${cons} L/cm.`})
+}
+function genM3MapFuelKg(){
+  const cons=pick([250,300,320]); const scale=pick([3000000,4600000,5200000]); const h=pick([1.75,2,2.25]); const v=pick([420,450,480]); const dens=pick([0.8,0.85,0.9]);
+  const dist=v*h; const cm=dist*100000/scale; const liters=cm*cons; const ans=liters*dens;
+  return qNumeric({cat:'units',text:`Une Alouette consomme ${cons} L par centimètre sur une carte au 1/${scale}. Elle volera ${hmin(h*60)} à ${v} km/h. Quelle masse de carburant devra-t-elle emporter si la densité du jour est de ${fmt(dens,2)} kg/L ?`,answer:ans,decimals:0,tol:5,unit:'kg',errorType:'carte + litres + densité',method:`Distance = temps×vitesse. Distance carte = distance réelle en cm / échelle. Volume = distance carte × ${cons}. Masse = volume × densité.`})
+}
+function genM3Applicants(){
+  const pctTrain=pick([70,75,80,85]); const n=pick([300,334,420]); const inc=pick([25,50,60]); const ans=n*pctTrain/100+n*(1+inc/100)*pctTrain/100;
+  return qNumeric({cat:'percent',text:`${pctTrain}% des candidats s'entraînent sur Devenezpilote. En 2025, ${n} candidats se présentent aux sélections. En 2026, le nombre de candidatures augmente de ${inc}%. Combien de candidats au total se seront entraînés sur le site sur ces deux années ?`,answer:ans,decimals:0,tol:1,unit:'candidats',errorType:'pourcentage sur deux années',method:`Année 1 : ${pctTrain}% de ${n}. Année 2 : candidats = ${n}×(1+${inc}%), puis même pourcentage. Additionne les deux années.`})
+}
+function genM3CatchUpPlanes(){
+  const gap=pick([120,160,200]); const slow=pick([70,75,90]); const fast=pick([110,120,140]);
+  const t=gap/(fast-slow); const ans=2*fast*t;
+  return qNumeric({cat:'speed',text:`Deux avions partent dans la même direction depuis deux aérodromes distants de ${gap} Nm. Ils volent respectivement à ${slow} kt et ${fast} kt. Le plus rapide fait demi-tour dès qu'il rattrape le premier. Quelle distance totale aura parcouru l'avion rapide ?`,answer:ans,decimals:1,tol:1,unit:'Nm',errorType:'rattrapage + aller-retour',method:`Temps de rattrapage = distance initiale / (vitesse rapide - vitesse lente). Distance aller du rapide = vitesse rapide × temps. Comme il fait demi-tour, distance totale = 2 × distance aller.`})
+}
+function genM3LandingFuelReserve(){
+  const reserve=pick([10,15,20]); const liters=pick([9000,12000,15000]); const consKg=pick([15,19,24]); const speed=pick([430,470,520]); const dens=pick([0.7,0.75,0.8]);
+  const usable=liters*(1-reserve/100); const lmin=consKg/dens; const hours=(usable/lmin)/60; const ans=hours*speed;
+  return qNumeric({cat:'percent',text:`Un avion doit atterrir avec ${reserve}% de carburant restant. Il dispose de ${liters} L, consomme ${consKg} kg/min à ${speed} km/h, et la densité du carburant est de ${fmt(dens,2)} kg/L. Quelle distance maximale peut-il parcourir ?`,answer:ans,decimals:0,tol:5,unit:'km',errorType:'réserve + kg/min vers L/min',method:`Carburant utilisable = ${liters}×(1-${reserve}%). Convertis la consommation : L/min = kg/min ÷ densité. Temps = litres utilisables / L/min, puis distance = temps en heures × vitesse.`})
+}
+function genM3Pursuit(){
+  const gapKm=pick([80,100,120]); const target=pick([15,18,20]); const startMin=pick([4,5]); const startKmh=pick([100,121,140]); const fastKmh=pick([280,319,340]);
+  const gap=gapKm*1000; const startS=startMin*60; const startMs=startKmh*1000/3600; const fastMs=fastKmh*1000/3600; const remaining=gap+target*startS-startMs*startS; const totalS=startS+remaining/(fastMs-target); const ans=totalS/60;
+  return qNumeric({cat:'speed',text:`Une voiture poursuit un objet s'éloignant à ${target} m/s, initialement à ${gapKm} km. Sa phase de départ dure ${startMin} min à ${startKmh} km/h. Ensuite, elle accélère à ${fastKmh} km/h. Combien de minutes lui faudra-t-il pour atteindre l'objet ?`,answer:ans,decimals:0,tol:1,unit:'min',errorType:'poursuite avec vitesse relative',method:`Pendant la phase de départ, les deux bougent : distance restante = distance initiale + objet×temps - poursuivant×temps. Ensuite, vitesse relative = vitesse rapide en m/s - vitesse de l’objet. Temps total = phase départ + distance restante / vitesse relative.`})
+}
+function genM3WheelScaleAfterburner(){
+  const turns=pick([1200,1600,1800]); const scale=pick([150,170,200]); const circ=pick([4,5,6]); const shorten=pick([25,35,40]);
+  const withPC=turns*(circ*scale/100); const ans=withPC/(1-shorten/100);
+  return qNumeric({cat:'geometry',text:`Les roues d’un Rafale tournent ${turns} fois lors d’un décollage avec post-combustion. À l’échelle 1/${scale}, la circonférence de la roue est de ${circ} cm. Quelle distance serait nécessaire sans post-combustion, si celle-ci raccourcit le décollage de ${shorten}% ?`,answer:ans,decimals:0,tol:5,unit:'m',errorType:'échelle + pourcentage inverse',method:`Circonférence réelle = ${circ} cm × ${scale}, puis en mètres. Distance avec post-combustion = tours × circonférence réelle. Si la post-combustion raccourcit de ${shorten}%, alors distance avec PC = distance sans PC × (1-${shorten}%). Donc distance sans PC = distance avec PC / ${fmt(1-shorten/100,2)}.`})
+}
+function genM3Alpinist(){
+  const speed=pick([220,263,300]); const h1=pick([6,8]); const red=pick([60,75,83]); const h2=pick([2,3]); const lastKm=pick([1.8,2.1,2.5]); const half=pick([40,50,60]);
+  const ans=h1+h2+(lastKm*1000)/(speed*(half/100));
+  return qNumeric({cat:'speed',text:`Un alpiniste grimpe à ${speed} m/h pendant ${h1} h. Ensuite sa vitesse est réduite de ${red}% pendant ${h2} h. Enfin, il doit encore grimper ${fmt(lastKm,1)} km avec une vitesse égale à ${half}% de sa vitesse initiale. Combien de temps total met-il ?`,answer:ans,decimals:2,tol:0.05,unit:'h',errorType:'temps imposés + dernier segment',method:`Les deux premières phases ont déjà une durée donnée : ${h1}+${h2}. Pour la dernière distance, vitesse = ${speed}×${half}%. Convertis ${fmt(lastKm,1)} km en mètres, puis temps = distance/vitesse. Additionne.`})
+}
+function genM3AfterburnerRange(){
+  const consS=pick([2.8,3.3,3.8]); const pcSpeed=pick([900,1000,1100]); const gain=pick([80,100,110]); const fuel=pick([12000,16000,18000]);
+  const normalSpeed=pcSpeed/(1+gain/100); const pcConsH=consS*3600; const normalCons=pcConsH/(1+gain/100); const ans=fuel/normalCons*normalSpeed;
+  return qNumeric({cat:'chain',text:`Un avion de chasse consomme ${fmt(consS,1)} L/s en post-combustion à ${pcSpeed} km/h. Le gain de vitesse est de ${gain}% et l'augmentation de consommation est aussi de ${gain}%. Quelle distance peut-il parcourir avec ${fuel} L sans post-combustion ?`,answer:ans,decimals:0,tol:5,unit:'km',errorType:'retirer un pourcentage multiplicatif',method:`En post-combustion, vitesse = vitesse normale ×(1+${gain}%). Donc vitesse normale = ${pcSpeed}/(1+${gain}%). Même logique pour la consommation : conso normale = conso PC / (1+${gain}%). Convertis L/s en L/h, puis durée = carburant/conso normale et distance = durée×vitesse normale.`})
+}
+function genM3MapScaleFromFlight(){
+  const ms=pick([25,30,35]); const totalH=pick([5,6]); const firstMin=pick([95,125,150]); const red=pick([20,30,40]); const mapCm=pick([15,20,25]);
+  const kmh=ms*3.6; const firstH=firstMin/60; const secondH=totalH-firstH; const dist=kmh*firstH+kmh*(1-red/100)*secondH; const ans=dist*100000/mapCm;
+  return qNumeric({cat:'units',text:`Un avion vole à ${ms} m/s pour une mission de ${String(totalH).padStart(2,'0')}h00m. Après ${hmin(firstMin)} de vol, il diminue sa vitesse de ${red}% jusqu'à destination. Il aura parcouru ${mapCm} cm sur sa carte. Quelle est l’échelle de la carte ?`,answer:ans,decimals:0,tol:50,unit:'',errorType:'distance réelle vers échelle',method:`Convertis ${ms} m/s en km/h : ×3,6. Distance 1 = vitesse×temps avant réduction. Distance 2 = vitesse réduite×temps restant. Distance réelle totale en cm / distance carte = dénominateur de l’échelle.`})
+}
+function genM3Mowing(){
+  const L=pick([1000,1200,1500]); const W=pick([12,16,18]); const blade=pick([2,3]); const v=pick([10,12.5,15]);
+  const passes=Math.ceil(W/blade); const dist=passes*L/1000; const ans=dist/v*60;
+  return qNumeric({cat:'geometry',text:`Le jardinier doit tondre une piste de ${L} m par ${W} m. Le tracteur tond sur ${blade} m de large et roule à ${fmt(v,1)} km/h. Combien de temps mettra-t-il ?`,answer:ans,decimals:0,tol:1,unit:'min',errorType:'nombre de passages + distance totale',method:`Nombre de passages = largeur / largeur de coupe, arrondi supérieur. Distance totale = passages × longueur. Convertis en km, puis temps = distance/vitesse et ×60 pour les minutes.`})
+}
+function genM3HeliFuelAdd(){
+  const scale=pick([1800000,2100000,2500000]); const cm=pick([35,45,50]); const cons=pick([180,200,240]); const per=pick([90,105,120]); const dens=pick([0.65,0.7,0.8]); const maxKg=pick([150,170,200]);
+  const dist=cm*scale/100000; const need=dist*cons/per; const tank=maxKg/dens; const ans=need-tank;
+  return qNumeric({cat:'units',text:`Un pilote prévoit de voler entre deux villes. Sur une carte au 1/${scale}, la distance est de ${cm} cm. L'hélicoptère consomme ${cons} L tous les ${per} km, chaque litre pesant ${fmt(dens,2)} kg. Si le réservoir contient au maximum ${maxKg} kg de carburant, combien de litres devra-t-il rajouter pour se rendre à destination ?`,answer:ans,decimals:2,tol:1,unit:'L',errorType:'échelle + consommation + capacité massique',method:`Distance réelle = cm×échelle puis en km. Carburant nécessaire = distance × ${cons}/${per}. Capacité du réservoir en litres = ${maxKg}/densité. Litres à rajouter = besoin - capacité.`})
+}
+function genM3TriangularAverage(){
+  const v1=pick([160,180,200]); const m1=pick([80,90]); const v2=pick([130,150,170]); const m2=pick([70,80]); const v3=pick([200,220,240]); const m3=pick([110,130]);
+  const t1=m1/60,t2=m2/60,t3=m3/60; const ans=(v1*t1+v2*t2+v3*t3)/(t1+t2+t3);
+  return qNumeric({cat:'speed',text:`Un chasseur effectue un parcours triangulaire. Tronçon 1 : ${v1} km/h pendant ${hmin(m1)}. Tronçon 2 : ${v2} km/h pendant ${hmin(m2)}. Tronçon 3 : ${v3} km/h pendant ${hmin(m3)}. Quelle est sa vitesse moyenne sur toute la durée ?`,answer:ans,decimals:2,tol:0.5,unit:'km/h',errorType:'moyenne pondérée par le temps',method:`Calcule la distance de chaque tronçon : vitesse×temps. Additionne les distances et les temps. Vitesse moyenne = distance totale / durée totale.`})
+}
+function genM3WheelChange(){
+  const refT=pick([45,50]); const refMass=pick([16,18]); const wheels=pick([2,3]); const flightMin=pick([66,75,90]); const takeoff=pick([13000,15000,16000]); const cons=pick([2500,3000,3500]);
+  const land=takeoff-cons*flightMin/60; const ans=wheels*refT*(land/(refMass*1000));
+  return qNumeric({cat:'chain',text:`Il faut ${refT} min pour changer une roue sur un Rafale pesant ${refMass} tonnes. Combien de temps faudra-t-il pour changer ${wheels} roues après un vol de ${hmin(flightMin)}, sachant que l’avion a décollé avec ${takeoff} kg et consomme ${cons} kg/h ?`,answer:ans,decimals:0,tol:1,unit:'min',errorType:'masse après vol + proportionnalité',method:`Masse consommée = ${cons}×temps de vol en heures. Masse à l’atterrissage = masse décollage - carburant consommé. Temps par roue = ${refT}×masse atterrissage/${refMass*1000}. Multiplie par le nombre de roues.`})
+}
+function genM3DroneRace(){
+  const v=pick([100,107,120]); const d1=pick([50,55,60]); const d2=pick([70,80]); const d3=pick([40,51,60]); const red=pick([25,30,35]); const inc=pick([25,33,40]); const stop=pick([40,50]);
+  const ans=(d1/v+d2/(v*(1-red/100))+d3/(v*(1+inc/100))+stop/60)*60;
+  return qTime({cat:'speed',text:`Une course de drones se déroule sur ${d1+d2+d3} km. Les drones parcourent les ${d1} premiers km à ${v} km/h. Leur vitesse est ensuite réduite de ${red}% pour les ${d2} km suivants. Pour les ${d3} derniers km, elle augmente de ${inc}% par rapport à la vitesse initiale. Il y a un ravitaillement de ${stop} min. Quelle est la durée totale ?`,minutes:ans,errorType:'course en segments + pause',method:`Temps total = ${d1}/${v} + ${d2}/(${v}×(1-${red}%)) + ${d3}/(${v}×(1+${inc}%)) + pause. Convertis ensuite en heures/minutes.`})
+}
+function genMath3Question(){
+  const cats=cfg.cats.length?cfg.cats:['speed','units','chain','percent','geometry']; const cat=pick(cats);
+  if(cat==='division')return genDivision();
+  if(cat==='percent')return oneOf([genM3ShipReserve,genM3LandingFuelReserve,genM3Applicants,genM3AfterburnerRange,genM3WheelScaleAfterburner]);
+  if(cat==='units')return oneOf([genM3FuelVolumeDensity,genM3HeliSub,genM3MapFuelLiters,genM3MapFuelKg,genM3MapScaleFromFlight,genM3HeliFuelAdd]);
+  if(cat==='geometry')return oneOf([genM3WheelScaleAfterburner,genM3Mowing,genM3TriangularAverage]);
+  if(cat==='speed')return oneOf([genM3AverageSpeedSegments,genM3PhotoMission,genM3Depressurization,genM3Pursuit,genM3CatchUpPlanes,genM3TriangularAverage,genM3DroneRace]);
+  if(cat==='chain')return oneOf([genM3Tanker,genM3MaxFuelMass,genM3WaterBomber,genM3EngineFailureConsumption,genM3AfterburnerRange,genM3WheelChange]);
+  if(cat==='share')return oneOf([genM3MaxFuelMass,genM3CatchUpPlanes,genM3WheelChange]);
+  if(cat==='trap')return oneOf([genTrap,genM3ShipReserve,genM3Pursuit,genM3MapScaleFromFlight]);
+  return genM3AverageSpeedSegments();
+}
+
+function genMath1Question(){
+  const cats=cfg.cats.length?cfg.cats:['chain','speed','geometry','percent','units','share']; const cat=pick(cats);
+  if(cat==='division')return genDivision();
+  if(cat==='percent')return oneOf([genM1Landing,genM1SpeedFraction,genM1MarathonGels,genM1Beekeeper,genM1Pompes]);
+  if(cat==='units')return oneOf([genM1BoatMap,genScale,genM1Interception,genM1DropZone]);
+  if(cat==='geometry')return oneOf([genM1CubeBoxes,genM1Textile,genM1BrickWall,genM1OrchardProduction,genM1Concrete]);
+  if(cat==='speed')return oneOf([genM1TrainIncident,genM1Helicopter,genM1RouteDelay,genM1Interception,genM1RoadWorks,genM1DropZone]);
+  if(cat==='chain')return oneOf([genM1A400FuelKg,genM1A400FuelLitres,genM1MarathonWater,genM1Pompes,genM1CampWater,genM1TrainProfit,genM1Textile]);
+  if(cat==='share')return oneOf([genM1SpeedFraction,genM1DelaySegments,genM1TrainProfit]);
+  if(cat==='trap')return oneOf([genTrap,genM1Smoke,genM1MarathonGels,genM1Concrete]);
+  return genM1A400FuelLitres();
+}
+
+function oneOf(list){return list[rint(0,list.length-1)]()}
+function generateCSOQuestion(){
+  const cats=cfg.cats.length?cfg.cats:['division']; const cat=pick(cats);
+  if(cat==='division')return genDivision();
+  if(cat==='percent')return oneOf([genVerger,genTankConsumption,genFuelLongTrip,genCapacityIncrease,genCake,genField,genComparisonPercent,genFuelFractions]);
+  if(cat==='units')return oneOf([genFootConversion,genScale,genHectares,genBottleConversion]);
+  if(cat==='geometry')return oneOf([genCylinder,genPaving,genSquareHangar,genTerrain,genWheels]);
+  if(cat==='speed')return oneOf([genDroneDistance,genHikerTime,genAirNegative,genObstacleSoldiers]);
+  if(cat==='chain')return oneOf([genPainters,genWheatBread,genWaterSoldiers,genAutonomy]);
+  if(cat==='share')return oneOf([genPrimeShare,genSalaryEquation,genCoffeeSystem,genAssociation,genVacations,genMarbles]);
+  if(cat==='trap')return genTrap();
+  return genDivision();
+}
+function genOrderMagnitude(){
+  const kind=pick(['division','fuel','distance','convert']);
+  if(kind==='division'){
+    const b=rnd(8.5,19.5,2), q=pick([8,10,12,15,18,20,25,30]), a=round(b*q+rnd(-b*.3,b*.3,2),2);
+    const ans=Math.round(a/b);
+    return qNumeric({cat:'division',text:`Ordre de grandeur : ${fmt(a,2)} ÷ ${fmt(b,2)} est le plus proche de…`,answer:ans,decimals:0,tol:1,unit:'',distractors:[ans*10,ans/10,ans+5,Math.max(1,ans-5)],errorType:'ordre de grandeur / virgule',method:`Arrondis ${fmt(a,2)} et ${fmt(b,2)} à des nombres simples, puis vérifie : diviseur × réponse doit redonner le dividende.`,quickMethod:`${fmt(a,0)} ÷ ${fmt(b,0)} ≈ ${ans}. Le contrôle mental est ${fmt(b,0)} × ${ans} ≈ ${fmt(a,0)}.`,trap:'Le piège classique est de répondre 10 fois trop grand ou 10 fois trop petit.'});
+  }
+  if(kind==='fuel'){
+    const litres=pick([220,260,320,450,600]), dist=pick([180,240,300,450,600]);
+    const ans=Math.round(litres/dist*100);
+    return qNumeric({cat:'percent',text:`Ordre de grandeur : ${litres} L consommés sur ${dist} km donnent environ combien de L/100 km ?`,answer:ans,decimals:0,tol:2,unit:'L/100 km',distractors:[Math.round(litres/dist),Math.round(litres*dist/100),ans*10],errorType:'ramener à 100 km',method:`On fait litres ÷ distance × 100.`,quickMethod:`Si ${dist} km est proche de ${Math.round(dist/100)*100} km, divise par ${fmt(dist/100,1)} pour obtenir le /100 km.`,trap:'Ne pas confondre consommation totale et consommation pour 100 km.'});
+  }
+  if(kind==='distance'){
+    const v=pick([180,240,360,480,720]), min=pick([10,15,20,25,30,40]);
+    const ans=Math.round(v*min/60);
+    return qNumeric({cat:'speed',text:`Ordre de grandeur : à ${v} km/h pendant ${min} min, on parcourt environ…`,answer:ans,decimals:0,tol:2,unit:'km',distractors:[Math.round(v*min),Math.round(v/min),ans*2,Math.max(1,Math.round(ans/2))],errorType:'temps en minutes',method:`Distance = vitesse × temps en heures. ${min} min = ${fmt(min/60,2)} h.`,quickMethod:`${min} min = ${fmt(min/60,2)} h, donc ${v} × ${fmt(min/60,2)} ≈ ${ans} km.`,trap:'Le piège est d’oublier de convertir les minutes en heures.'});
+  }
+  const kg=pick([600,800,1200,1500,2400]), dens=pick([0.72,0.75,0.8]);
+  const ans=Math.round(kg/dens);
+  return qNumeric({cat:'units',text:`Ordre de grandeur : ${kg} kg de carburant de densité ${fmt(dens,2)} correspondent à environ combien de litres ?`,answer:ans,decimals:0,tol:20,unit:'L',distractors:[Math.round(kg*dens),Math.round(kg/dens/10),Math.round(kg/dens*10)],errorType:'densité kg/L',method:`Volume = masse ÷ densité.`,quickMethod:`Comme la densité est inférieure à 1, le volume en litres doit être plus grand que la masse en kg.`,trap:'Si le résultat est plus petit que la masse, tu as probablement multiplié au lieu de diviser.'});
+}
+function generateCSOByCat(cat){
+  if(cat==='division')return genDivision();
+  if(cat==='percent')return oneOf([genVerger,genTankConsumption,genFuelLongTrip,genCapacityIncrease,genCake,genField,genComparisonPercent,genFuelFractions]);
+  if(cat==='units')return oneOf([genFootConversion,genScale,genHectares,genBottleConversion]);
+  if(cat==='geometry')return oneOf([genCylinder,genPaving,genSquareHangar,genTerrain,genWheels]);
+  if(cat==='speed')return oneOf([genDroneDistance,genHikerTime,genAirNegative,genObstacleSoldiers]);
+  if(cat==='chain')return oneOf([genPainters,genWheatBread,genWaterSoldiers,genAutonomy]);
+  if(cat==='share')return oneOf([genPrimeShare,genSalaryEquation,genCoffeeSystem,genAssociation,genVacations,genMarbles]);
+  if(cat==='trap')return genTrap();
+  return generateCSOQuestion();
+}
+function generateByExam(exam,cat){
+  let q;
+  if(exam==='cso') q=cat?generateCSOByCat(cat):generateCSOQuestion();
+  else if(exam==='math1'){
+    for(let i=0;i<40;i++){q=genMath1Question(); if(!cat||q.cat===cat)break;}
+  }else if(exam==='math3'){
+    for(let i=0;i<40;i++){q=genMath3Question(); if(!cat||q.cat===cat)break;}
+  }else if(exam==='mix12'){
+    q=Math.random()<0.55?generateByExam('cso',cat):generateByExam('math1',cat);
+  }else{
+    const r=Math.random(); q=r<0.34?generateByExam('cso',cat):r<0.67?generateByExam('math1',cat):generateByExam('math3',cat);
+  }
+  q=normalizeQ(q); q.exam=exam==='mix'||exam==='mix12'?(q.exam&&q.exam!==exam?q.exam:exam):exam;
+  return q;
+}
+function getMissedBank(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'[]')}catch(e){return[]}}
+function putMissedBank(a){try{localStorage.setItem(MISSED_KEY,JSON.stringify(a.slice(-120)))}catch(e){}}
+function generateRevisionQuestion(){
+  const bank=getMissedBank().filter(x=>(cfg.exam==='mix'||cfg.exam==='mix12'||!x.exam||x.exam===cfg.exam)&&(!cfg.cats.length||cfg.cats.includes(x.cat)));
+  if(!bank.length)return generateQuestion(false);
+  const item=pick(bank);
+  return generateByExam(item.exam||cfg.exam,item.cat);
+}
+function generateQuestion(useRevision=true){
+  if(cfg.session==='order')return genOrderMagnitude();
+  if(useRevision&&cfg.session==='revision')return generateRevisionQuestion();
+  for(let i=0;i<50;i++){
+    const q=generateByExam(cfg.exam);
+    if(!cfg.cats.length||cfg.cats.includes(q.cat))return q;
+  }
+  return generateByExam(cfg.exam);
+}
+function setupSession(){
+  const freeN=Math.max(3,Math.min(60,Number(el('freeN')?.value||10))); const freeD=Math.max(1,Math.min(90,Number(el('freeMin')?.value||10)))*60;
+  if(cfg.session==='order')return {n:20,d:8*60,target:24};
+  if(cfg.session==='revision')return {n:Math.min(20,Math.max(8,getMissedBank().length||10)),d:15*60,target:55};
+  if(cfg.session==='free')return {n:freeN,d:freeD,target:Math.round(freeD/freeN)};
+  if(cfg.exam==='math1' && cfg.session==='sim')return {n:15,d:45*60,target:180};
+  if(cfg.exam==='math1' && cfg.session==='sprint')return {n:8,d:15*60,target:112};
+  if(cfg.exam==='math3' && cfg.session==='sim')return {n:25,d:40*60,target:96};
+  if(cfg.exam==='math3' && cfg.session==='sprint')return {n:10,d:15*60,target:90};
+  if(cfg.exam==='mix12' && cfg.session==='sim')return {n:26,d:28*60,target:65};
+  if(cfg.exam==='mix12' && cfg.session==='sprint')return {n:12,d:10*60,target:50};
+  if(cfg.exam==='mix' && cfg.session==='sim')return {n:30,d:40*60,target:80};
+  if(cfg.exam==='mix' && cfg.session==='sprint')return {n:12,d:12*60,target:60};
+  if(cfg.session==='sim')return {n:26,d:18*60,target:41};
+  if(cfg.session==='sprint')return {n:12,d:5*60,target:25};
+  return {n:10,d:10*60,target:60};
+}
+function startGame(){
+  const s=setupSession(); eopnSaved=false; eopnHighlight=-1;
+  state={questions:[],index:0,score:0,good:0,wrong:0,skipped:0,gross:0,start:Date.now(),qStart:Date.now(),duration:s.d,timer:null,logs:[],locked:false,target:s.target,finished:false};
+  for(let i=0;i<s.n;i++)state.questions.push(generateQuestion());
+  el('pauseBtn').textContent=cfg.noPause?'Pause désactivée':'Pause'; el('pauseBtn').disabled=cfg.noPause; el('pauseBtn').style.opacity=cfg.noPause?'.55':'1';
+  show('game'); renderQ(); tick(); clearInterval(state.timer); state.timer=setInterval(tick,500);
+}
+function tick(){
+  if(state.paused||state.finished)return;
+  const left=Math.max(0,state.duration-(Date.now()-state.start)/1000); const p=100*left/state.duration; el('bar').style.width=p+'%'; el('bar').classList.toggle('hot',left<=30); const m=Math.floor(left/60),s=Math.floor(left%60); el('hT').textContent=m+':'+String(s).padStart(2,'0'); el('hT').classList.toggle('hot',left<=30); if(left<=0)finishGame();
+}
+function renderQ(){
+  state.locked=false; const q=state.questions[state.index]; state.qStart=Date.now();
+  el('hQ').textContent=(state.index+1)+'/'+state.questions.length; el('hS').textContent=state.logs.length; el('hA').textContent=state.target+'s';
+  const avg=state.logs.length?state.logs.reduce((a,b)=>a+b.time,0)/state.logs.length:0; el('hAvg').textContent=avg?Math.round(avg)+'s':'—';
+  el('catChip').textContent=catNames[q.cat]||q.cat; el('typeChip').textContent=(cfg.answerMode==='qcm'||q.kind==='text')?'QCM':'Réponse libre'; el('targetChip').textContent=(examNames[cfg.exam]||cfg.exam)+' · '+diffNames[cfg.difficulty]+' · cible ≈ '+state.target+' s';
+  el('qText').textContent=q.text; const opts=el('options'), row=el('inputRow'); opts.innerHTML=''; el('answerInput').value='';
+  if(cfg.answerMode==='qcm'||q.kind==='text'){
+    opts.style.display='grid'; row.style.display='none';
+    q.choices.forEach((c,i)=>{const b=document.createElement('button'); b.className='opt'; b.textContent=c.label; b.onclick=()=>chooseOption(i,b); opts.appendChild(b)});
+  }else{opts.style.display='none'; row.style.display='flex'; setTimeout(()=>el('answerInput').focus(),60)}
+}
+function chooseOption(i,btn){if(state.locked)return; const q=state.questions[state.index]; const c=q.choices[i]; const val=q.kind==='num'?(c.value!==undefined?c.value:Number(String(c.label).replace(',','.'))):undefined; grade(c.correct,c.label,val)}
+function validateFree(){if(state.locked)return; const q=state.questions[state.index]; const raw=el('answerInput').value.replace(',','.').trim(); if(!raw)return; const val=Number(raw); if(!Number.isFinite(val))return; const tol=q.tol!==undefined?q.tol:(q.decimals?0.08:1); grade(Math.abs(val-q.answer)<=tol,fmt(val,q.decimals||2)+(q.unit?' '+q.unit:''),val)}
+function classifyError(q,val,gross,skipped){
+  if(skipped)return 'question non traitée';
+  if(gross)return 'ordre de grandeur / virgule';
+  if(q.errorType)return q.errorType;
+  if(q.cat==='units')return 'conversion'; if(q.cat==='percent')return 'pourcentage'; if(q.cat==='speed')return 'vitesse-distance-temps'; if(q.cat==='geometry')return 'surface/volume'; return 'raisonnement';
+}
+function grade(ok,given,val){
+  if(state.locked)return; state.locked=true; const q=state.questions[state.index]; const t=(Date.now()-state.qStart)/1000; let pts=0,gross=false;
+  if(ok){state.good++; pts=t<=state.target*.75?3:t<=state.target*1.1?2:1; state.score+=pts}
+  else{state.wrong++; if(q.kind==='num'&&val!==undefined&&Number.isFinite(val)){const ratio=Math.abs(val/(q.answer||1)); gross=ratio>5||ratio<0.2||Math.abs(val-q.answer)>Math.max(Math.abs(q.answer)*0.55,20); if(gross){state.score-=1; state.gross++}}}
+  state.logs.push({q,given,ok,time:t,points:pts,gross,skipped:false,errorClass:classifyError(q,val,gross,false)}); nextQ();
+}
+function skipQ(){if(state.locked)return; const q=state.questions[state.index]; const t=(Date.now()-state.qStart)/1000; state.skipped++; state.logs.push({q,given:'—',ok:false,time:t,points:0,gross:false,skipped:true,errorClass:classifyError(q,undefined,false,true)}); nextQ()}
+function nextQ(){if(state.index>=state.questions.length-1){finishGame();return} state.index++; renderQ()}
+function pauseGame(){if(cfg.noPause)return; state.paused=true; state.pauseAt=Date.now(); el('pauseOverlay').classList.add('on')}
+function resumeGame(){if(!state.paused)return; const delta=Date.now()-state.pauseAt; state.start+=delta; state.qStart+=delta; state.paused=false; el('pauseOverlay').classList.remove('on'); tick()}
+function getCatStats(){const cats={}; state.logs.forEach(l=>{const k=l.q.cat||'autre'; if(!cats[k])cats[k]={n:0,good:0,wrong:0,skip:0,time:0,gross:0}; cats[k].n++; cats[k].time+=l.time; if(l.ok)cats[k].good++; else cats[k].wrong++; if(l.skipped)cats[k].skip++; if(l.gross)cats[k].gross++;}); return cats}
+function renderCategoryDiagnostic(cats){
+  const rows=Object.entries(cats).sort((a,b)=>((a[1].good/a[1].n)-(b[1].good/b[1].n))).map(([k,v])=>{
+    const acc=v.n?Math.round(v.good/v.n*100):0, avg=v.n?Math.round(v.time/v.n):0;
+    const advice=acc<60?'À retravailler en priorité':avg>state.target?'Rythme à accélérer':'Correct';
+    return `<div class="diagLine"><span><b>${catNames[k]||k}</b></span><span>${v.good}/${v.n}</span><span>${acc}%</span><span>${avg}s</span><span>${advice}</span></div>`;
+  }).join('');
+  el('diagTable').innerHTML='<div class="diagLine head"><span>Catégorie</span><span>Score</span><span>Réussite</span><span>Temps</span><span>Diagnostic</span></div>'+rows;
+}
+function saveMissedFromSession(){
+  const bank=getMissedBank();
+  state.logs.filter(l=>!l.ok).forEach(l=>bank.push({exam:l.q.exam||cfg.exam,cat:l.q.cat,errorType:l.errorClass||l.q.errorType,date:new Date().toISOString()}));
+  putMissedBank(bank);
+}
+function finishGame(){
+  if(state.finished)return; state.finished=true; clearInterval(state.timer); el('pauseOverlay').classList.remove('on');
+  const total=state.logs.length; const acc=total?state.good/total*100:0; const avg=total?state.logs.reduce((a,b)=>a+b.time,0)/total:0;
+  el('endScore').textContent=state.score; el('endSub').textContent=`${total}/${state.questions.length} questions traitées · ${examNames[cfg.exam]||cfg.exam} · ${diffNames[cfg.difficulty]}`;
+  el('stGood').textContent=state.good; el('stWrong').textContent=state.wrong; el('stSkip').textContent=state.questions.length-total+state.skipped; el('stAcc').textContent=pct(acc); el('stAvg').textContent=avg?Math.round(avg)+'s':'—'; el('stGross').textContent=state.gross;
+  const slow=avg>state.target; const cats=getCatStats(); const ordered=Object.entries(cats).sort((a,b)=>(a[1].good/a[1].n)-(b[1].good/b[1].n));
+  let diag=[]; if(acc>=80)diag.push('Bonne justesse globale.'); else if(acc>=60)diag.push('Base correcte, mais il faut sécuriser les questions faciles.'); else diag.push('Priorité : ralentir légèrement au début pour éviter les erreurs évitables.');
+  diag.push(slow?'Rythme trop lent : utilise davantage l’ordre de grandeur et les réponses QCM.':'Rythme compatible avec le format choisi.');
+  if(state.gross>0)diag.push('Grosses erreurs détectées : contrôle systématique de l’unité et de la virgule.');
+  if(ordered[0])diag.push('Thème à retravailler : '+(catNames[ordered[0][0]]||ordered[0][0])+'.');
+  el('diag').textContent=diag.join(' '); renderCategoryDiagnostic(cats); saveMissedFromSession(); const name=el('eopnName'); if(name&&!eopnSaved)name.value=''; renderEopnLB(); show('end');
+}
+function getEopnScores(){
+  let current=[], legacy=[]; try{current=JSON.parse(localStorage.getItem(SCORE_KEY)||'[]')}catch(e){current=[]}
+  try{legacy=JSON.parse(localStorage.getItem(LEGACY_SCORE_KEY)||'[]').map(x=>Object.assign({exam:'legacy',examLabel:'Ancien historique'},x))}catch(e){legacy=[]}
+  return current.concat(legacy);
+}
+function putEopnScores(a){try{localStorage.setItem(SCORE_KEY,JSON.stringify(a.filter(x=>x.exam!=='legacy')))}catch(e){}}
+function saveEopnScore(){
+  if(eopnSaved){renderEopnLB();return}
+  const total=state.logs.length; const acc=total?Math.round(state.good/total*100):0; const avg=total?Math.round(state.logs.reduce((a,b)=>a+b.time,0)/total):0; const mode=cfg.session==='sim'?'Simulation':cfg.session==='sprint'?'Sprint':cfg.session==='revision'?'Révision erreurs':cfg.session==='order'?'Ordre de grandeur':'Libre'; const name=(el('eopnName').value.trim()||'Anonyme').slice(0,14);
+  const scores=getEopnScores().filter(x=>x.exam!=='legacy'); const cats=getCatStats(); const weak=Object.entries(cats).sort((a,b)=>(a[1].good/a[1].n)-(b[1].good/b[1].n))[0];
+  const entry={name,exam:cfg.exam,examLabel:examNames[cfg.exam]||cfg.exam,score:state.score,good:state.good,wrong:state.wrong,skipped:state.questions.length-total+state.skipped,acc,avg,total,mode,difficulty:cfg.difficulty,weakCat:weak?weak[0]:'',date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}),iso:new Date().toISOString(),details:state.logs.map(l=>({cat:l.q.cat,ok:l.ok,time:Math.round(l.time),given:l.given,answer:getAnswerText(l.q),error:l.errorClass||l.q.errorType}))};
+  scores.push(entry); scores.sort((a,b)=>(a.examLabel||'').localeCompare(b.examLabel||'')||b.score-a.score||b.acc-a.acc||a.avg-b.avg); if(scores.length>80)scores.length=80; putEopnScores(scores); eopnHighlight=scores.indexOf(entry); eopnSaved=true; renderEopnLB();
+}
+function renderEopnLB(){
+  const rows=el('eopnLbRows'); if(!rows)return; const scores=getEopnScores(); if(!scores.length){rows.innerHTML='<div class="lbEmpty">Aucun résultat enregistré.</div>';return}
+  const groups={}; scores.forEach(s=>{const key=s.examLabel||examNames[s.exam]||'EOPN'; if(!groups[key])groups[key]=[]; groups[key].push(s)});
+  rows.innerHTML=Object.entries(groups).map(([g,arr])=>`<div class="historyGroup"><div class="historyTitle">${escapeHTML(g)}</div><div class="lbHead"><span>#</span><span>Nom</span><span>Score</span><span>Justesse</span><span>Date</span></div>${arr.slice(0,12).map((s,i)=>`<div class="lbLine ${scores.indexOf(s)===eopnHighlight?'hl':''}"><span>${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</span><span>${escapeHTML(s.name||'Anonyme')} · ${escapeHTML(s.mode||'')}</span><span>${s.score}</span><span>${s.acc}%</span><span>${s.date}</span></div>`).join('')}</div>`).join('');
+}
+function getAnswerText(q){return q.kind==='text'?q.answer:fmt(q.answer,q.decimals||0)+(q.unit?' '+q.unit:'')}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showReview(){
+  const list=el('reviewList'); if(!state.logs.length){list.innerHTML='<div class="empty">Aucune question traitée.</div>';show('review');return}
+  list.innerHTML=state.logs.map((l,i)=>{const q=l.q; const ans=getAnswerText(q); const badge=l.ok?'<span class="chip blue">Correct</span>':l.skipped?'<span class="chip soft">Passée</span>':l.gross?'<span class="chip warn">Grosse erreur</span>':'<span class="chip warn">À revoir</span>'; return `<div class="rv"><div class="rvTop"><span class="chip soft">${i+1}. ${escapeHTML(catNames[q.cat]||q.cat)}</span>${badge}<span class="chip soft">${Math.round(l.time)} s</span><button class="reportBtn" onclick="reportQuestion(${i})">Signaler</button></div><div class="rvQ">${escapeHTML(q.text).replace(/\n/g,'<br>')}</div><div class="rvSmall">Ta réponse : <strong>${escapeHTML(l.given)}</strong> · Réponse : <strong>${escapeHTML(ans)}</strong> · Points : <strong>${l.points}</strong></div><div class="method"><strong>Méthode complète :</strong> ${escapeHTML(q.method||'')}<br><strong>Méthode rapide :</strong> ${escapeHTML(q.quickMethod||q.method||'')}<br><strong>Piège :</strong> ${escapeHTML(q.trap||'Vérifier l’unité et l’arrondi.')}<br><strong>Type d’erreur :</strong> ${escapeHTML(l.errorClass||q.errorType||'à analyser')}</div></div>`}).join(''); show('review')
+}
+function getReports(){try{return JSON.parse(localStorage.getItem(REPORT_KEY)||'[]')}catch(e){return[]}}
+function putReports(a){try{localStorage.setItem(REPORT_KEY,JSON.stringify(a.slice(-80)))}catch(e){}}
+function reportQuestion(i){const l=state.logs[i]; if(!l)return; const reps=getReports(); reps.push({date:new Date().toISOString(),exam:cfg.exam,cat:l.q.cat,text:l.q.text,answer:getAnswerText(l.q),reason:'signalée depuis le bilan'}); putReports(reps); alert('Question signalée : elle sera gardée dans la liste locale des questions à revoir.')}
+function backMenu(){clearInterval(state.timer); state.finished=true; el('pauseOverlay').classList.remove('on'); show('menu')}
+function downloadText(filename,content,type){const blob=new Blob([content],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},200)}
+function exportSessionJSON(){const payload={exam:cfg.exam,session:cfg.session,difficulty:cfg.difficulty,score:state.score,good:state.good,wrong:state.wrong,skipped:state.skipped,createdAt:new Date().toISOString(),logs:state.logs.map(l=>({question:l.q.text,category:l.q.cat,given:l.given,answer:getAnswerText(l.q),ok:l.ok,time:Math.round(l.time),method:l.q.method,quickMethod:l.q.quickMethod,trap:l.q.trap,errorType:l.errorClass||l.q.errorType}))}; downloadText('eopn_session.json',JSON.stringify(payload,null,2),'application/json')}
+function exportSessionCSV(){const head=['numero','epreuve','categorie','ok','temps_s','reponse_donnee','bonne_reponse','type_erreur','question']; const lines=[head.join(';')]; state.logs.forEach((l,i)=>{const vals=[i+1,examNames[cfg.exam]||cfg.exam,catNames[l.q.cat]||l.q.cat,l.ok?'OK':'A_REVOIR',Math.round(l.time),l.given,getAnswerText(l.q),l.errorClass||l.q.errorType,l.q.text.replace(/\s+/g,' ')].map(v=>'"'+String(v).replace(/"/g,'""')+'"'); lines.push(vals.join(';'))}); downloadText('eopn_session.csv',lines.join('\n'),'text/csv;charset=utf-8')}
+function startRevisionFromEnd(){cfg.session='revision'; document.querySelectorAll('#sessionGrid button').forEach(b=>b.classList.toggle('active',b.dataset.mode==='revision')); startGame()}
+el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree()});
+
+</script>
+</body>
+</html>
+</template>
+
+
 <script>
 function openTraining(kind) {
   const frame = document.getElementById('appFrame');
@@ -1471,9 +2559,12 @@ function openTraining(kind) {
   if (kind === 'math') {
     frame.srcdoc = document.getElementById('tplMath').innerHTML;
     title.textContent = 'Calcul mental';
-  } else {
+  } else if (kind === 'memory') {
     frame.srcdoc = document.getElementById('tplMemory').innerHTML;
     title.textContent = 'Mémoire additive';
+  } else if (kind === 'eopn') {
+    frame.srcdoc = document.getElementById('tplEopn').innerHTML;
+    title.textContent = 'CSO / Maths EOPN';
   }
   main.style.display = 'none';
   view.style.display = 'block';
