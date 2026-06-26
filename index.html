@@ -79,12 +79,16 @@ body { min-height:100vh; background:var(--bg); color:var(--text); }
         <div>
           <div class="icon">🎯</div>
           <h2>CSO / Maths EOPN</h2>
-          <p>CSO, Maths 1, Maths 3, simulations chronométrées, QCM, pièges d’énoncé, aviation, conversions, pourcentages et problèmes longs.</p>
+          <p>CSO, Maths 1, Maths 3 et exercice Réflexes : uniquement des énoncés type EOPN, corrections différées, pièges d’énoncé et diagnostic.</p>
         </div>
         <button type="button">Lancer CSO / EOPN</button>
       </article>
     </div>
-    <div class="note">Pour GitHub Pages, renomme ce fichier en <strong>index.html</strong> et publie-le comme page principale.</div>
+    <div class="note">
+      <button type="button" onclick="exportAllReportsTXT()" style="border:1px solid var(--border);background:#fff;color:var(--text);border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;margin-bottom:10px;width:100%;max-width:360px">Télécharger tous les signalements</button><br>
+      Les signalements de tous les entraînements sont regroupés ici dans un fichier texte que tu peux me renvoyer pour corriger les questions.
+      <br>Pour GitHub Pages, renomme ce fichier en <strong>index.html</strong> et publie-le comme page principale.
+    </div>
   </div>
 </main>
 
@@ -1266,6 +1270,28 @@ body{
   font-weight:600;
 }
 
+
+.sliderBox input[type=range]{
+  width:100%;
+  accent-color:var(--primary);
+}
+.rangeRow{
+  display:grid;
+  grid-template-columns:1fr 96px;
+  gap:14px;
+  align-items:center;
+}
+.rangeValue{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-height:42px;
+  border-radius:12px;
+  background:var(--primary-light);
+  color:var(--primary);
+  font-weight:800;
+}
+
 @media(max-width:560px){
   .buttons{flex-direction:column;}
 }
@@ -1280,19 +1306,28 @@ body{
 <div class="logo">MEMORY <span>SUM</span></div>
 <div class="tagline">Mémoire additive</div>
 
-<div class="panel">
-<div class="panel-title">Durée totale (secondes)</div>
-<input class="input" id="duration" type="number" value="60">
+<div class="panel sliderBox">
+  <div class="panel-title">Durée totale</div>
+  <div class="rangeRow">
+    <input id="durationMin" type="range" min="1" max="20" step="1" value="1" oninput="syncMemorySliders()">
+    <span class="rangeValue" id="durationMinValue">1 min</span>
+  </div>
 </div>
 
-<div class="panel">
-<div class="panel-title">Temps d'affichage d'un nombre (ms)</div>
-<input class="input" id="showTime" type="number" value="1000">
+<div class="panel sliderBox">
+  <div class="panel-title">Temps d'affichage d'un nombre</div>
+  <div class="rangeRow">
+    <input id="showTimeSec" type="range" min="0.5" max="10" step="0.5" value="1" oninput="syncMemorySliders()">
+    <span class="rangeValue" id="showTimeSecValue">1 s</span>
+  </div>
 </div>
 
-<div class="panel">
-<div class="panel-title">Temps avant le nombre suivant (ms)</div>
-<input class="input" id="gapTime" type="number" value="500">
+<div class="panel sliderBox">
+  <div class="panel-title">Temps avant le nombre suivant</div>
+  <div class="rangeRow">
+    <input id="gapTimeSec" type="range" min="0.5" max="10" step="0.5" value="0.5" oninput="syncMemorySliders()">
+    <span class="rangeValue" id="gapTimeSecValue">0,5 s</span>
+  </div>
 </div>
 
 <div class="panel">
@@ -1413,9 +1448,9 @@ function start(){
   clearAllTimers()
 
   cfg={
-    duration:safeNumber(el('duration').value,60),
-    show:safeNumber(el('showTime').value,1000),
-    gap:safeNumber(el('gapTime').value,500),
+    duration:safeNumber(el('durationMin').value,1)*60,
+    show:safeNumber(el('showTimeSec').value,1)*1000,
+    gap:safeNumber(el('gapTimeSec').value,0.5)*1000,
     type:el('digitType').value
   }
 
@@ -1504,8 +1539,15 @@ function showNumber(){
   },cfg.show)
 }
 
+function formatClock(ms){
+  const totalSec=Math.ceil(ms/1000)
+  const m=Math.floor(totalSec/60)
+  const s=String(totalSec%60).padStart(2,'0')
+  return m+':'+s
+}
+
 function updateHud(){
-  el('timeLeft').textContent=Math.ceil(remainingMs/1000)+"s"
+  el('timeLeft').textContent=formatClock(remainingMs)
   el('count').textContent=entries.filter(e=>e.included).length
   const pct=cfg.duration ? Math.max(0,Math.min(100,(remainingMs/(cfg.duration*1000))*100)) : 0
   el('bar').style.width=pct+"%"
@@ -1669,6 +1711,23 @@ el('answerInput').addEventListener("keydown",e=>{
   if(e.key==="Enter") check()
 })
 
+
+
+function formatSecondsLabel(v){
+  const n=Number(v)
+  return (Number.isInteger(n)?String(n):String(n).replace('.',','))+' s'
+}
+
+function syncMemorySliders(){
+  const duration=el('durationMin')
+  const show=el('showTimeSec')
+  const gap=el('gapTimeSec')
+  if(duration)el('durationMinValue').textContent=duration.value+' min'
+  if(show)el('showTimeSecValue').textContent=formatSecondsLabel(show.value)
+  if(gap)el('gapTimeSecValue').textContent=formatSecondsLabel(gap.value)
+}
+
+syncMemorySliders()
 </script>
 
 </body>
@@ -1703,81 +1762,30 @@ el('answerInput').addEventListener("keydown",e=>{
 <div class="pauseOverlay" id="pauseOverlay"><div class="logo" style="font-size:34px">Pause</div><div class="notice">La session est suspendue. En simulation réelle, garde plutôt l’option “pause désactivée”.</div><button class="btn" onclick="resumeGame()">Reprendre</button></div>
 <div class="screen active" id="menu">
   <div class="logo">EOPN <span>TRAINER</span></div>
-  <div class="tagline">CSO, Maths 1, Maths 3, QCM, pièges d’énoncé, simulations chronométrées et méthodes rapides en fin de session.</div>
-
-  <div class="panel">
-    <div class="pt">Format</div>
-    <div class="grid3" id="sessionGrid">
-      <button class="choice active" data-mode="sim"><b>Simulation EOPN</b><span>Format réel : CSO 26/18 min, Maths 1 15/45 min, Maths 3 25/40 min.</span></button>
-      <button class="choice" data-mode="sprint"><b>Sprint ciblé</b><span>Session courte pour travailler la vitesse et les automatismes.</span></button>
-      <button class="choice" data-mode="free"><b>Entraînement libre</b><span>Choisis le nombre de questions et la durée.</span></button>
-      <button class="choice" data-mode="revision"><b>Révision erreurs</b><span>Reprend les catégories ratées avec de nouvelles valeurs.</span></button>
-      <button class="choice" data-mode="order"><b>Ordre de grandeur</b><span>Divisions, conversions et QCM d’estimation très rapide.</span></button>
-    </div>
-  </div>
+  <div class="tagline">CSO, Maths 1, Maths 3 : QCM chronométrés avec uniquement des énoncés type EOPN. Le mode Réflexes entraîne le choix de la bonne méthode avant le calcul.</div>
 
   <div class="panel">
     <div class="pt">Épreuve</div>
     <div class="grid3" id="examGrid">
-      <button class="choice active" data-mode="cso"><b>CSO</b><span>Raisonnement numérique court : 26 questions / 18 min.</span></button>
-      <button class="choice" data-mode="math1"><b>Maths 1</b><span>Problèmes longs : 15 questions / 45 min.</span></button>
-      <button class="choice" data-mode="math3"><b>Maths 3</b><span>Problèmes aviation/mission : 25 questions / 40 min.</span></button>
-      <button class="choice" data-mode="mix12"><b>Mix CSO + Maths 1</b><span>Format intermédiaire pour lier calcul rapide et problèmes longs.</span></button>
-      <button class="choice" data-mode="mix"><b>Mix complet</b><span>Mélange CSO + Maths 1 + Maths 3 pour varier les automatismes.</span></button>
+      <button class="choice active" data-mode="cso"><b>CSO</b><span>Format réel : 26 questions / 18 min.</span></button>
+      <button class="choice" data-mode="math1"><b>Maths 1</b><span>Format réel : 15 questions / 45 min.</span></button>
+      <button class="choice" data-mode="math3"><b>Maths 3</b><span>Format réel : 25 questions / 40 min.</span></button>
+      <button class="choice" data-mode="reflex"><b>Réflexes</b><span>Énoncés courts pour choisir le bon réflexe de calcul avant de résoudre.</span></button>
     </div>
   </div>
 
   <div class="panel">
-    <div class="pt">Mode de réponse</div>
-    <div class="grid2" id="answerModeGrid">
-      <button class="choice active" data-mode="qcm"><b>QCM</b><span>Comme les questions que tu m’as envoyées : utiliser les propositions.</span></button>
-      <button class="choice" data-mode="free"><b>Réponse libre</b><span>Utile pour travailler le calcul, moins rentable le jour J.</span></button>
+    <div class="pt">Fonctionnement</div>
+    <div style="color:var(--soft);font-weight:600;line-height:1.6">
+      Le mode est volontairement simplifié : pas de catégories à choisir, pas d’options inutiles.
+      L’application lance directement une session QCM au format de l’épreuve sélectionnée.
+      Il n’y a plus de mix CSO/Maths 1/Maths 3, ni de catégories à choisir.
+      Après chaque réponse, elle passe à la question suivante sans correction intermédiaire.
+      Les corrections complètes, pièges, erreurs et diagnostics apparaissent uniquement à la fin.
     </div>
   </div>
 
-  <div class="panel">
-    <div class="pt">Difficulté</div>
-    <div class="grid3" id="difficultyGrid">
-      <button class="choice active" data-mode="easy"><b>Facile</b><span>Valeurs plus rondes, distracteurs espacés.</span></button>
-      <button class="choice" data-mode="medium"><b>Moyen</b><span>Conversions et pourcentages classiques.</span></button>
-      <button class="choice" data-mode="hard"><b>Difficile</b><span>Plusieurs étapes et distracteurs proches.</span></button>
-      <button class="choice" data-mode="expert"><b>Expert</b><span>Questions longues, arrondis et pièges plus serrés.</span></button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="pt">Options de session</div>
-    <div class="settingGrid">
-      <button class="choice active" id="pauseToggle" data-mode="nopause"><b>Pause désactivée</b><span>Plus réaliste en simulation : la pause n’existe pas le jour J.</span></button>
-      <button class="choice" id="reportInfo" data-mode="report"><b>Signalement actif</b><span>Après la session, tu peux marquer une question incohérente.</span></button>
-      <button class="choice" id="exportInfo" data-mode="export"><b>Export disponible</b><span>CSV/JSON du bilan et des détails.</span></button>
-    </div>
-    <div class="customGrid" style="margin-top:10px" id="freeSettings">
-      <div><div class="pt" style="margin-bottom:6px">Questions libres</div><input class="smallInput" id="freeN" type="number" value="10" min="3" max="60"></div>
-      <div><div class="pt" style="margin-bottom:6px">Durée libre (min)</div><input class="smallInput" id="freeMin" type="number" value="10" min="1" max="90"></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="pt">Catégories</div>
-    <div class="catGrid" id="catGrid">
-      <button class="cat active" data-cat="division"><b>Divisions</b><span>Estimation décimale.</span></button>
-      <button class="cat active" data-cat="percent"><b>Pourcentages</b><span>Reste, baisse, abattage.</span></button>
-      <button class="cat active" data-cat="units"><b>Conversions</b><span>km, cm, hl, L, cl.</span></button>
-      <button class="cat active" data-cat="geometry"><b>Surfaces/volumes</b><span>Cylindre, allée, pavés.</span></button>
-      <button class="cat active" data-cat="speed"><b>Vitesses</b><span>Distance, retard, moyenne.</span></button>
-      <button class="cat active" data-cat="chain"><b>Proportionnalité</b><span>Peintres, eau, blé → pain.</span></button>
-      <button class="cat active" data-cat="share"><b>Équations</b><span>Partages, systèmes, inconnues.</span></button>
-      <button class="cat active" data-cat="trap"><b>Pièges</b><span>Réflexe d’énoncé.</span></button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="pt">Objectif</div>
-    <div style="color:var(--soft);font-weight:600;line-height:1.55">Pendant la session, aucune correction n’est affichée : tu choisis une réponse et l’application passe directement à la suivante. La correction complète, la méthode rapide, les pièges et le diagnostic par catégorie apparaissent uniquement à la fin.</div>
-  </div>
-
-  <button class="btn" onclick="startGame()">▶ Lancer</button>
+  <button class="btn" onclick="cfg.session='sim';startGame()">▶ Lancer</button>
 </div>
 
 <div class="screen" id="game">
@@ -1832,7 +1840,6 @@ el('answerInput').addEventListener("keydown",e=>{
   <div class="toolbar">
     <button class="btn" onclick="showReview()">Voir le détail corrigé</button>
     <button class="btn secondary" onclick="exportSessionCSV()">Exporter CSV</button>
-    <button class="btn secondary" onclick="exportSessionJSON()">Exporter JSON</button>
     <button class="btn secondary" onclick="startRevisionFromEnd()">Réviser les erreurs</button>
     <button class="btn secondary" onclick="backMenu()">Menu</button>
   </div>
@@ -1840,18 +1847,18 @@ el('answerInput').addEventListener("keydown",e=>{
 
 <div class="screen" id="review">
   <div class="logo" style="font-size:clamp(24px,5vw,34px)">Détail des questions</div>
-  <div class="tagline">Réponses, temps, type d’erreur et méthode rapide.</div>
+  <div class="tagline">Réponses, temps, type d’erreur et méthode complète.</div>
   <div class="review" id="reviewList"></div>
   <button class="btn" style="margin-top:16px;width:100%" onclick="show('end')">↩ Retour au bilan</button>
 </div>
 
 <script>
 
-const cfg={exam:'cso',session:'sim',answerMode:'qcm',difficulty:'easy',noPause:true,cats:['division','percent','units','geometry','speed','chain','share','trap']};
+const cfg={exam:'cso',session:'sim',answerMode:'qcm',difficulty:'medium',noPause:true,cats:['percent','units','geometry','speed','chain','share','trap']};
 let state={questions:[],index:0,score:0,good:0,wrong:0,skipped:0,gross:0,start:0,qStart:0,duration:1080,timer:null,logs:[],locked:false,target:41};
 let eopnSaved=false, eopnHighlight=-1;
 const catNames={division:'Divisions',percent:'Pourcentages',units:'Conversions',geometry:'Surfaces/volumes',speed:'Vitesses',chain:'Proportionnalité',share:'Équations/partages',trap:'Pièges d’énoncé'};
-const examNames={cso:'CSO',math1:'Maths 1',math3:'Maths 3',mix12:'Mix CSO + Maths 1',mix:'Mix complet',legacy:'Ancien historique'};
+const examNames={cso:'CSO',math1:'Maths 1',math3:'Maths 3',reflex:'Réflexes',legacy:'Ancien historique'};
 const diffNames={easy:'Facile',medium:'Moyen',hard:'Difficile',expert:'Expert'};
 const SCORE_KEY='eopnScores_v6', LEGACY_SCORE_KEY='eopnScores', MISSED_KEY='eopnMissedBank_v6', REPORT_KEY='eopnReportedQuestions_v6';
 function el(id){return document.getElementById(id)}
@@ -1865,8 +1872,15 @@ function fmt(n,d=2){if(typeof n==='string')return n; if(!Number.isFinite(n))retu
 function pct(x){return Math.round(x)+'%'}
 function hmin(totalMin){totalMin=Math.round(totalMin); const h=Math.floor(totalMin/60),m=totalMin%60; return String(h).padStart(2,'0')+'h'+String(m).padStart(2,'0')+'m'}
 function bindGrid(id,key,multi=false){document.querySelectorAll('#'+id+' button').forEach(b=>b.addEventListener('click',()=>{if(multi){b.classList.toggle('active');cfg.cats=[...document.querySelectorAll('#catGrid .cat.active')].map(x=>x.dataset.cat); if(!cfg.cats.length){b.classList.add('active');cfg.cats=[b.dataset.cat]}}else{document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active');cfg[key]=b.dataset.mode}}))}
-bindGrid('examGrid','exam'); bindGrid('sessionGrid','session'); bindGrid('answerModeGrid','answerMode'); bindGrid('difficultyGrid','difficulty'); bindGrid('catGrid','cats',true);
-el('pauseToggle').addEventListener('click',()=>{cfg.noPause=!cfg.noPause;el('pauseToggle').classList.toggle('active',cfg.noPause)});
+bindGrid('examGrid','exam');
+bindGrid('sessionGrid','session');
+bindGrid('answerModeGrid','answerMode');
+bindGrid('difficultyGrid','difficulty');
+bindGrid('catGrid','cats',true);
+const pauseToggleBtn=el('pauseToggle');
+if(pauseToggleBtn){
+  pauseToggleBtn.addEventListener('click',()=>{cfg.noPause=!cfg.noPause;pauseToggleBtn.classList.toggle('active',cfg.noPause)});
+}
 function makeChoices(correct,dec=0,extras=[],unit=''){
   const c=round(correct,dec);
   const vals=[];
@@ -1890,10 +1904,23 @@ function makeChoices(correct,dec=0,extras=[],unit=''){
   while(vals.length<5)add(c+rnd(-4*step,4*step,dec+1));
   return shuffle(vals.slice(0,5).map(v=>({label:fmt(v,dec)+(unit?' '+unit:''),value:v,correct:Math.abs(v-c)<=minGap*.51})));
 }
+function buildQuickMethod(obj){
+  if(obj.quickMethod && obj.quickMethod!==obj.method)return obj.quickMethod;
+  const cat=obj.cat||'';
+  const unit=obj.unit?(' en '+obj.unit):'';
+  if(cat==='percent')return 'Calcule directement la part restante ou le coefficient multiplicateur, puis contrôle que le résultat est dans le bon ordre de grandeur.';
+  if(cat==='speed')return 'Convertis d’abord le temps dans la bonne unité, puis applique distance = vitesse × temps ou temps = distance ÷ vitesse.';
+  if(cat==='units')return 'Avant de calculer, écris mentalement la conversion clé. Si la densité est inférieure à 1, le volume en litres doit être plus grand que la masse en kg.';
+  if(cat==='geometry')return 'Identifie la formule utile, garde seulement les dimensions nécessaires, puis vérifie l’unité finale'+unit+'.';
+  if(cat==='chain')return 'Ramène à une unité simple, puis multiplie par le nombre de personnes, d’heures, de machines ou de kilomètres demandés.';
+  if(cat==='share')return 'Pose la quantité inconnue, transforme les phrases en parts, puis vérifie que la somme des parts redonne le total.';
+  if(cat==='division')return 'Arrondis le dividende et le diviseur, estime le quotient, puis élimine les réponses ×10 ou ÷10.';
+  return 'Commence par l’ordre de grandeur, élimine les réponses absurdes, puis vérifie l’unité et l’arrondi.';
+}
 function normalizeQ(obj){
   obj.exam=obj.exam||cfg.exam;
   obj.difficulty=cfg.difficulty;
-  obj.quickMethod=obj.quickMethod||obj.method||'Commence par l’ordre de grandeur, élimine les réponses absurdes, puis vérifie avec l’unité.';
+  obj.quickMethod=buildQuickMethod(obj);
   obj.trap=obj.trap||obj.errorType||'Vérifier l’unité, l’arrondi et le sens de la question.';
   obj.errorType=obj.errorType||'erreur de raisonnement ou d’arrondi';
   return obj;
@@ -1909,9 +1936,37 @@ function genDivision(){
 
 /* ───────────── POURCENTAGES / FRACTIONS ───────────── */
 function genVerger(){
-  const a=rint(220,520),b=rint(220,520); const p1=pick([18,21,25,37,42,59,68,74]); const p2=pick([21,35,41,59,63,68,72]);
-  const ans=Math.floor(a*(1-p1/100)+b*(1-p2/100));
-  return qNumeric({cat:'percent',text:`Pierre possède un verger composé de ${a} pommiers et ${b} poiriers. Sachant qu'il abat ${p2}% de poiriers et ${p1}% de pommiers, combien d'arbres restent-ils au total ?`,answer:ans,decimals:0,tol:1,unit:'',errorType:'pourcentage restant',method:`On cherche ce qui reste : il reste ${100-p1}% des pommiers et ${100-p2}% des poiriers. Plus rapide que calculer les arbres abattus : ${100-p1}% de ${a} + ${100-p2}% de ${b}, puis arrondi à l’inférieur si besoin.`})
+  const fruits=[
+    {sing:'pommier',plur:'pommiers'},
+    {sing:'poirier',plur:'poiriers'},
+    {sing:'cerisier',plur:'cerisiers'},
+    {sing:'prunier',plur:'pruniers'},
+    {sing:'abricotier',plur:'abricotiers'},
+    {sing:'pêcher',plur:'pêchers'}
+  ];
+  const duo=shuffle(fruits.slice()).slice(0,2);
+  const a=rint(10,28)*20;
+  const b=rint(10,28)*20;
+  const pcts=shuffle([15,20,25,30,35,40,45,50,55,60,65,70,75]).slice(0,2);
+  const p1=pcts[0], p2=pcts[1];
+  const rest1=a*(100-p1)/100, rest2=b*(100-p2)/100;
+  const cut1=a*p1/100, cut2=b*p2/100;
+  const ans=rest1+rest2;
+  const first=duo[0], second=duo[1];
+  return qNumeric({
+    cat:'percent',
+    family:'verger_abattage_variable',
+    text:`Pierre possède un verger composé de ${a} ${first.plur} et ${b} ${second.plur}. Il abat ${p1}% des ${first.plur} et ${p2}% des ${second.plur}. Combien d'arbres restent-ils au total ?`,
+    answer:ans,
+    decimals:0,
+    tol:1,
+    unit:'',
+    distractors:[cut1+cut2,rest1+cut2,cut1+rest2,a+b-cut1,a+b-cut2],
+    errorType:'pourcentage restant / arbre abattu',
+    method:`Il ne faut pas additionner les arbres abattus, mais les arbres restants. Il reste ${100-p1}% des ${first.plur}, soit ${fmt(rest1,0)}, et ${100-p2}% des ${second.plur}, soit ${fmt(rest2,0)}. Total restant : ${fmt(rest1,0)} + ${fmt(rest2,0)} = ${fmt(ans,0)}.`,
+    quickMethod:`Retiens directement les pourcentages restants : ${100-p1}% de ${a} + ${100-p2}% de ${b}.`,
+    trap:`Le piège est de répondre au nombre d'arbres abattus, ou de garder le même pourcentage pour les deux espèces.`
+  })
 }
 function genTankConsumption(){
   const capacity=pick([180,200,220,240,250,300,320]); const dist=pick([200,250,300,400,500]); const frac=pick([{l:'1/2',v:1/2},{l:'2/5',v:2/5},{l:'3/5',v:3/5},{l:'1/4',v:1/4}]);
@@ -2326,7 +2381,7 @@ function genM3DroneRace(){
 }
 function genMath3Question(){
   const cats=cfg.cats.length?cfg.cats:['speed','units','chain','percent','geometry']; const cat=pick(cats);
-  if(cat==='division')return genDivision();
+  if(cat==='division')return oneOf([genM3ShipReserve,genM3LandingFuelReserve,genM3AfterburnerRange]);
   if(cat==='percent')return oneOf([genM3ShipReserve,genM3LandingFuelReserve,genM3Applicants,genM3AfterburnerRange,genM3WheelScaleAfterburner]);
   if(cat==='units')return oneOf([genM3FuelVolumeDensity,genM3HeliSub,genM3MapFuelLiters,genM3MapFuelKg,genM3MapScaleFromFlight,genM3HeliFuelAdd]);
   if(cat==='geometry')return oneOf([genM3WheelScaleAfterburner,genM3Mowing,genM3TriangularAverage]);
@@ -2339,7 +2394,7 @@ function genMath3Question(){
 
 function genMath1Question(){
   const cats=cfg.cats.length?cfg.cats:['chain','speed','geometry','percent','units','share']; const cat=pick(cats);
-  if(cat==='division')return genDivision();
+  if(cat==='division')return oneOf([genM1Landing,genM1A400FuelLitres,genM1TrainIncident]);
   if(cat==='percent')return oneOf([genM1Landing,genM1SpeedFraction,genM1MarathonGels,genM1Beekeeper,genM1Pompes]);
   if(cat==='units')return oneOf([genM1BoatMap,genScale,genM1Interception,genM1DropZone]);
   if(cat==='geometry')return oneOf([genM1CubeBoxes,genM1Textile,genM1BrickWall,genM1OrchardProduction,genM1Concrete]);
@@ -2352,8 +2407,8 @@ function genMath1Question(){
 
 function oneOf(list){return list[rint(0,list.length-1)]()}
 function generateCSOQuestion(){
-  const cats=cfg.cats.length?cfg.cats:['division']; const cat=pick(cats);
-  if(cat==='division')return genDivision();
+  const cats=cfg.cats.length?cfg.cats:['percent','units','geometry','speed','chain','share','trap']; const cat=pick(cats);
+  if(cat==='division')return oneOf([genTankConsumption,genFuelLongTrip,genScale]);
   if(cat==='percent')return oneOf([genVerger,genTankConsumption,genFuelLongTrip,genCapacityIncrease,genCake,genField,genComparisonPercent,genFuelFractions]);
   if(cat==='units')return oneOf([genFootConversion,genScale,genHectares,genBottleConversion]);
   if(cat==='geometry')return oneOf([genCylinder,genPaving,genSquareHangar,genTerrain,genWheels]);
@@ -2361,7 +2416,7 @@ function generateCSOQuestion(){
   if(cat==='chain')return oneOf([genPainters,genWheatBread,genWaterSoldiers,genAutonomy]);
   if(cat==='share')return oneOf([genPrimeShare,genSalaryEquation,genCoffeeSystem,genAssociation,genVacations,genMarbles]);
   if(cat==='trap')return genTrap();
-  return genDivision();
+  return genTankConsumption();
 }
 function genOrderMagnitude(){
   const kind=pick(['division','fuel','distance','convert']);
@@ -2385,7 +2440,7 @@ function genOrderMagnitude(){
   return qNumeric({cat:'units',text:`Ordre de grandeur : ${kg} kg de carburant de densité ${fmt(dens,2)} correspondent à environ combien de litres ?`,answer:ans,decimals:0,tol:20,unit:'L',distractors:[Math.round(kg*dens),Math.round(kg/dens/10),Math.round(kg/dens*10)],errorType:'densité kg/L',method:`Volume = masse ÷ densité.`,quickMethod:`Comme la densité est inférieure à 1, le volume en litres doit être plus grand que la masse en kg.`,trap:'Si le résultat est plus petit que la masse, tu as probablement multiplié au lieu de diviser.'});
 }
 function generateCSOByCat(cat){
-  if(cat==='division')return genDivision();
+  if(cat==='division')return oneOf([genTankConsumption,genFuelLongTrip,genScale]);
   if(cat==='percent')return oneOf([genVerger,genTankConsumption,genFuelLongTrip,genCapacityIncrease,genCake,genField,genComparisonPercent,genFuelFractions]);
   if(cat==='units')return oneOf([genFootConversion,genScale,genHectares,genBottleConversion]);
   if(cat==='geometry')return oneOf([genCylinder,genPaving,genSquareHangar,genTerrain,genWheels]);
@@ -2395,58 +2450,117 @@ function generateCSOByCat(cat){
   if(cat==='trap')return genTrap();
   return generateCSOQuestion();
 }
+
+function reflexAnswerFor(q){
+  if(q.cat==='percent')return 'Identifier la part restante ou le coefficient multiplicateur avant de calculer.';
+  if(q.cat==='speed')return 'Convertir le temps dans la bonne unité puis utiliser distance = vitesse × temps.';
+  if(q.cat==='units')return 'Faire la conversion d’unités avant tout calcul.';
+  if(q.cat==='geometry')return 'Repérer la formule géométrique utile et l’unité finale demandée.';
+  if(q.cat==='chain')return 'Ramener à une unité simple puis appliquer la proportionnalité.';
+  if(q.cat==='share')return 'Poser une inconnue ou des parts, puis traduire chaque phrase en équation.';
+  if(q.cat==='trap')return 'Lire exactement ce qui est demandé et éliminer le piège de vocabulaire.';
+  return 'Commencer par l’ordre de grandeur et vérifier l’unité.';
+}
+function reflexOptionsFor(answer){
+  const pool=[
+    'Identifier la part restante ou le coefficient multiplicateur avant de calculer.',
+    'Convertir le temps dans la bonne unité puis utiliser distance = vitesse × temps.',
+    'Faire la conversion d’unités avant tout calcul.',
+    'Repérer la formule géométrique utile et l’unité finale demandée.',
+    'Ramener à une unité simple puis appliquer la proportionnalité.',
+    'Poser une inconnue ou des parts, puis traduire chaque phrase en équation.',
+    'Lire exactement ce qui est demandé et éliminer le piège de vocabulaire.',
+    'Commencer par l’ordre de grandeur et vérifier l’unité.'
+  ];
+  const opts=[answer];
+  shuffle(pool.filter(x=>x!==answer)).slice(0,4).forEach(x=>opts.push(x));
+  return shuffle(opts);
+}
+function genReflexQuestion(){
+  const exams=['cso','math1','math3'];
+  let base=null, source='cso';
+  for(let i=0;i<60;i++){
+    source=pick(exams);
+    base=generateByExam(source);
+    if(base && base.cat!=='division')break;
+  }
+  const answer=reflexAnswerFor(base||{cat:'trap'});
+  return qText({
+    exam:'reflex',
+    cat:(base&&base.cat)||'trap',
+    text:`Énoncé réflexe (${examNames[source]}) :\n${base.text}\n\nQuel est le premier réflexe à avoir ?`,
+    answer:answer,
+    options:reflexOptionsFor(answer),
+    errorType:'choix du réflexe de résolution',
+    method:`Réflexe attendu : ${answer} Ensuite seulement, on déroule le calcul. Pour cet énoncé, la correction complète serait : ${base.method}`,
+    trap:(base&&base.trap)||'Le piège est de commencer à calculer sans identifier la méthode.'
+  })
+}
+
 function generateByExam(exam,cat){
   let q;
-  if(exam==='cso') q=cat?generateCSOByCat(cat):generateCSOQuestion();
+  if(exam==='reflex') q=genReflexQuestion();
+  else if(exam==='cso') q=cat?generateCSOByCat(cat):generateCSOQuestion();
   else if(exam==='math1'){
     for(let i=0;i<40;i++){q=genMath1Question(); if(!cat||q.cat===cat)break;}
   }else if(exam==='math3'){
     for(let i=0;i<40;i++){q=genMath3Question(); if(!cat||q.cat===cat)break;}
-  }else if(exam==='mix12'){
-    q=Math.random()<0.55?generateByExam('cso',cat):generateByExam('math1',cat);
   }else{
-    const r=Math.random(); q=r<0.34?generateByExam('cso',cat):r<0.67?generateByExam('math1',cat):generateByExam('math3',cat);
+    q=generateCSOQuestion();
   }
-  q=normalizeQ(q); q.exam=exam==='mix'||exam==='mix12'?(q.exam&&q.exam!==exam?q.exam:exam):exam;
+  q=normalizeQ(q); q.exam=exam;
   return q;
 }
 function getMissedBank(){try{return JSON.parse(localStorage.getItem(MISSED_KEY)||'[]')}catch(e){return[]}}
 function putMissedBank(a){try{localStorage.setItem(MISSED_KEY,JSON.stringify(a.slice(-120)))}catch(e){}}
 function generateRevisionQuestion(){
-  const bank=getMissedBank().filter(x=>(cfg.exam==='mix'||cfg.exam==='mix12'||!x.exam||x.exam===cfg.exam)&&(!cfg.cats.length||cfg.cats.includes(x.cat)));
+  const bank=getMissedBank().filter(x=>(cfg.exam==='reflex'||!x.exam||x.exam===cfg.exam)&&(!cfg.cats.length||cfg.cats.includes(x.cat)));
   if(!bank.length)return generateQuestion(false);
   const item=pick(bank);
   return generateByExam(item.exam||cfg.exam,item.cat);
 }
+function questionFamily(q){
+  if(q.family)return q.family;
+  return String((q.cat||'')+'|'+(q.text||''))
+    .toLowerCase()
+    .replace(/[0-9]+([,.][0-9]+)?/g,'#')
+    .replace(/\s+/g,' ')
+    .slice(0,140);
+}
+function rememberFamily(q){
+  const f=questionFamily(q);
+  q.family=f;
+  if(state.usedFamilies)state.usedFamilies.add(f);
+  return q;
+}
 function generateQuestion(useRevision=true){
-  if(cfg.session==='order')return genOrderMagnitude();
-  if(useRevision&&cfg.session==='revision')return generateRevisionQuestion();
-  for(let i=0;i<50;i++){
+  if(cfg.session==='order')return rememberFamily(genOrderMagnitude());
+  if(useRevision&&cfg.session==='revision')return rememberFamily(generateRevisionQuestion());
+  let fallback=null;
+  for(let i=0;i<80;i++){
     const q=generateByExam(cfg.exam);
-    if(!cfg.cats.length||cfg.cats.includes(q.cat))return q;
+    const f=questionFamily(q);
+    if(!fallback)fallback=q;
+    if(!state.usedFamilies || !state.usedFamilies.has(f))return rememberFamily(q);
   }
-  return generateByExam(cfg.exam);
+  return rememberFamily(fallback||generateByExam(cfg.exam));
 }
 function setupSession(){
   const freeN=Math.max(3,Math.min(60,Number(el('freeN')?.value||10))); const freeD=Math.max(1,Math.min(90,Number(el('freeMin')?.value||10)))*60;
-  if(cfg.session==='order')return {n:20,d:8*60,target:24};
   if(cfg.session==='revision')return {n:Math.min(20,Math.max(8,getMissedBank().length||10)),d:15*60,target:55};
   if(cfg.session==='free')return {n:freeN,d:freeD,target:Math.round(freeD/freeN)};
+  if(cfg.exam==='reflex')return {n:25,d:15*60,target:36};
   if(cfg.exam==='math1' && cfg.session==='sim')return {n:15,d:45*60,target:180};
   if(cfg.exam==='math1' && cfg.session==='sprint')return {n:8,d:15*60,target:112};
   if(cfg.exam==='math3' && cfg.session==='sim')return {n:25,d:40*60,target:96};
   if(cfg.exam==='math3' && cfg.session==='sprint')return {n:10,d:15*60,target:90};
-  if(cfg.exam==='mix12' && cfg.session==='sim')return {n:26,d:28*60,target:65};
-  if(cfg.exam==='mix12' && cfg.session==='sprint')return {n:12,d:10*60,target:50};
-  if(cfg.exam==='mix' && cfg.session==='sim')return {n:30,d:40*60,target:80};
-  if(cfg.exam==='mix' && cfg.session==='sprint')return {n:12,d:12*60,target:60};
   if(cfg.session==='sim')return {n:26,d:18*60,target:41};
   if(cfg.session==='sprint')return {n:12,d:5*60,target:25};
   return {n:10,d:10*60,target:60};
 }
 function startGame(){
   const s=setupSession(); eopnSaved=false; eopnHighlight=-1;
-  state={questions:[],index:0,score:0,good:0,wrong:0,skipped:0,gross:0,start:Date.now(),qStart:Date.now(),duration:s.d,timer:null,logs:[],locked:false,target:s.target,finished:false};
+  state={questions:[],index:0,score:0,good:0,wrong:0,skipped:0,gross:0,start:Date.now(),qStart:Date.now(),duration:s.d,timer:null,logs:[],locked:false,target:s.target,finished:false,usedFamilies:new Set()};
   for(let i=0;i<s.n;i++)state.questions.push(generateQuestion());
   el('pauseBtn').textContent=cfg.noPause?'Pause désactivée':'Pause'; el('pauseBtn').disabled=cfg.noPause; el('pauseBtn').style.opacity=cfg.noPause?'.55':'1';
   show('game'); renderQ(); tick(); clearInterval(state.timer); state.timer=setInterval(tick,500);
@@ -2531,15 +2645,29 @@ function renderEopnLB(){
 function getAnswerText(q){return q.kind==='text'?q.answer:fmt(q.answer,q.decimals||0)+(q.unit?' '+q.unit:'')}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function showReview(){
-  const list=el('reviewList'); if(!state.logs.length){list.innerHTML='<div class="empty">Aucune question traitée.</div>';show('review');return}
-  list.innerHTML=state.logs.map((l,i)=>{const q=l.q; const ans=getAnswerText(q); const badge=l.ok?'<span class="chip blue">Correct</span>':l.skipped?'<span class="chip soft">Passée</span>':l.gross?'<span class="chip warn">Grosse erreur</span>':'<span class="chip warn">À revoir</span>'; return `<div class="rv"><div class="rvTop"><span class="chip soft">${i+1}. ${escapeHTML(catNames[q.cat]||q.cat)}</span>${badge}<span class="chip soft">${Math.round(l.time)} s</span><button class="reportBtn" onclick="reportQuestion(${i})">Signaler</button></div><div class="rvQ">${escapeHTML(q.text).replace(/\n/g,'<br>')}</div><div class="rvSmall">Ta réponse : <strong>${escapeHTML(l.given)}</strong> · Réponse : <strong>${escapeHTML(ans)}</strong> · Points : <strong>${l.points}</strong></div><div class="method"><strong>Méthode complète :</strong> ${escapeHTML(q.method||'')}<br><strong>Méthode rapide :</strong> ${escapeHTML(q.quickMethod||q.method||'')}<br><strong>Piège :</strong> ${escapeHTML(q.trap||'Vérifier l’unité et l’arrondi.')}<br><strong>Type d’erreur :</strong> ${escapeHTML(l.errorClass||q.errorType||'à analyser')}</div></div>`}).join(''); show('review')
+  const list=el('reviewList');
+  if(!state.logs.length){list.innerHTML='<div class="empty">Aucune question traitée.</div>';show('review');return}
+  list.innerHTML=state.logs.map((l,i)=>{
+    const q=l.q;
+    const ans=getAnswerText(q);
+    const badge=l.ok?'<span class="chip blue">Correct</span>':l.skipped?'<span class="chip soft">Passée</span>':l.gross?'<span class="chip warn">Grosse erreur</span>':'<span class="chip warn">À revoir</span>';
+    return `<div class="rv"><div class="rvTop"><span class="chip soft">${i+1}. ${escapeHTML(catNames[q.cat]||q.cat)}</span>${badge}<span class="chip soft">${Math.round(l.time)} s</span><button class="reportBtn" onclick="reportQuestion(${i})">Signaler</button></div><div class="rvQ">${escapeHTML(q.text).replace(/\n/g,'<br>')}</div><div class="rvSmall">Ta réponse : <strong>${escapeHTML(l.given)}</strong> · Réponse : <strong>${escapeHTML(ans)}</strong> · Points : <strong>${l.points}</strong></div><div class="method"><strong>Méthode complète :</strong> ${escapeHTML(q.method||'')}<br><strong>Piège :</strong> ${escapeHTML(q.trap||'Vérifier l’unité et l’arrondi.')}<br><strong>Type d’erreur :</strong> ${escapeHTML(l.errorClass||q.errorType||'à analyser')}</div></div>`
+  }).join('');
+  show('review')
 }
 function getReports(){try{return JSON.parse(localStorage.getItem(REPORT_KEY)||'[]')}catch(e){return[]}}
 function putReports(a){try{localStorage.setItem(REPORT_KEY,JSON.stringify(a.slice(-80)))}catch(e){}}
-function reportQuestion(i){const l=state.logs[i]; if(!l)return; const reps=getReports(); reps.push({date:new Date().toISOString(),exam:cfg.exam,cat:l.q.cat,text:l.q.text,answer:getAnswerText(l.q),reason:'signalée depuis le bilan'}); putReports(reps); alert('Question signalée : elle sera gardée dans la liste locale des questions à revoir.')}
+function reportQuestion(i){
+  const l=state.logs[i]; if(!l)return;
+  const reps=getReports();
+  const item={date:new Date().toISOString(),training:'EOPN',exam:examNames[cfg.exam]||cfg.exam,cat:catNames[l.q.cat]||l.q.cat,text:l.q.text,given:l.given,answer:getAnswerText(l.q),method:l.q.method,trap:l.q.trap,errorType:l.errorClass||l.q.errorType,reason:'signalée depuis le bilan'};
+  reps.push(item);
+  putReports(reps);
+  try{const all=JSON.parse(localStorage.getItem('allTrainingReports_v8')||'[]'); all.push(item); localStorage.setItem('allTrainingReports_v8',JSON.stringify(all.slice(-200)))}catch(e){}
+  alert('Question signalée : elle est stockée localement. Reviens au menu principal puis utilise “Télécharger tous les signalements” pour me l’envoyer.')
+}
 function backMenu(){clearInterval(state.timer); state.finished=true; el('pauseOverlay').classList.remove('on'); show('menu')}
 function downloadText(filename,content,type){const blob=new Blob([content],{type}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},200)}
-function exportSessionJSON(){const payload={exam:cfg.exam,session:cfg.session,difficulty:cfg.difficulty,score:state.score,good:state.good,wrong:state.wrong,skipped:state.skipped,createdAt:new Date().toISOString(),logs:state.logs.map(l=>({question:l.q.text,category:l.q.cat,given:l.given,answer:getAnswerText(l.q),ok:l.ok,time:Math.round(l.time),method:l.q.method,quickMethod:l.q.quickMethod,trap:l.q.trap,errorType:l.errorClass||l.q.errorType}))}; downloadText('eopn_session.json',JSON.stringify(payload,null,2),'application/json')}
 function exportSessionCSV(){const head=['numero','epreuve','categorie','ok','temps_s','reponse_donnee','bonne_reponse','type_erreur','question']; const lines=[head.join(';')]; state.logs.forEach((l,i)=>{const vals=[i+1,examNames[cfg.exam]||cfg.exam,catNames[l.q.cat]||l.q.cat,l.ok?'OK':'A_REVOIR',Math.round(l.time),l.given,getAnswerText(l.q),l.errorClass||l.q.errorType,l.q.text.replace(/\s+/g,' ')].map(v=>'"'+String(v).replace(/"/g,'""')+'"'); lines.push(vals.join(';'))}); downloadText('eopn_session.csv',lines.join('\n'),'text/csv;charset=utf-8')}
 function startRevisionFromEnd(){cfg.session='revision'; document.querySelectorAll('#sessionGrid button').forEach(b=>b.classList.toggle('active',b.dataset.mode==='revision')); startGame()}
 el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree()});
@@ -2551,6 +2679,53 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
 
 
 <script>
+
+function readJSONLocal(key){
+  try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return[]}
+}
+function uniqueReports(items){
+  const seen=new Set();
+  return items.filter(item=>{
+    const k=[item.training,item.exam,item.cat,item.text,item.given,item.answer,item.date].join('|');
+    if(seen.has(k))return false;
+    seen.add(k);
+    return true;
+  });
+}
+function exportAllReportsTXT(){
+  const keys=['allTrainingReports_v8','eopnReportedQuestions_v6','mathReportedQuestions_v8','memoryReportedQuestions_v8'];
+  let reports=[];
+  keys.forEach(k=>{reports=reports.concat(readJSONLocal(k).map(x=>Object.assign({sourceKey:k},x)))})
+  reports=uniqueReports(reports);
+  if(!reports.length){alert('Aucun signalement enregistré pour le moment.');return;}
+  const lines=[];
+  lines.push('SIGNALEMENTS APPLICATION ENTRAÎNEMENT');
+  lines.push('Généré le '+new Date().toLocaleString('fr-FR'));
+  lines.push('Nombre de signalements : '+reports.length);
+  lines.push('');
+  reports.forEach((r,i)=>{
+    lines.push('--- Signalement '+(i+1)+' ---');
+    lines.push('Date : '+(r.date||'non précisée'));
+    lines.push('Entraînement : '+(r.training||'EOPN'));
+    lines.push('Épreuve : '+(r.exam||''));
+    lines.push('Catégorie : '+(r.cat||''));
+    lines.push('Question : '+String(r.text||'').replace(/\s+/g,' ').trim());
+    lines.push('Réponse donnée : '+(r.given||''));
+    lines.push('Réponse attendue : '+(r.answer||''));
+    lines.push('Type d’erreur : '+(r.errorType||''));
+    lines.push('Méthode actuelle : '+String(r.method||'').replace(/\s+/g,' ').trim());
+    lines.push('Piège : '+String(r.trap||'').replace(/\s+/g,' ').trim());
+    lines.push('');
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='signalements_entrainements.txt';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},200);
+}
+
 function openTraining(kind) {
   const frame = document.getElementById('appFrame');
   const main = document.getElementById('mainMenu');
