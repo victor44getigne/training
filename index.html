@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1762,7 +1763,7 @@ syncMemorySliders()
 <div class="pauseOverlay" id="pauseOverlay"><div class="logo" style="font-size:34px">Pause</div><div class="notice">La session est suspendue. En simulation réelle, garde plutôt l’option “pause désactivée”.</div><button class="btn" onclick="resumeGame()">Reprendre</button></div>
 <div class="screen active" id="menu">
   <div class="logo">EOPN <span>TRAINER</span></div>
-  <div class="tagline">CSO, Maths 1, Maths 3 : QCM chronométrés avec uniquement des énoncés type EOPN. Le mode Réflexes entraîne le choix de la bonne méthode avant le calcul.</div>
+  <div class="tagline">CSO, Maths 1, Maths 3 : QCM chronométrés avec uniquement des énoncés type EOPN. Le mode Réflexes entraîne le choix de la bonne méthode avant le calcul. Le mode Calculs réflexes automatise les conversions et calculs rapides.</div>
 
   <div class="panel">
     <div class="pt">Épreuve</div>
@@ -1771,6 +1772,7 @@ syncMemorySliders()
       <button class="choice" data-mode="math1"><b>Maths 1</b><span>Format réel : 15 questions / 45 min.</span></button>
       <button class="choice" data-mode="math3"><b>Maths 3</b><span>Format réel : 25 questions / 40 min.</span></button>
       <button class="choice" data-mode="reflex"><b>Réflexes</b><span>Énoncés courts pour choisir le bon réflexe de calcul avant de résoudre.</span></button>
+      <button class="choice" data-mode="calcReflex"><b>Calculs réflexes</b><span>Trachtenberg, nœuds/km/h, minutes → heures et carrés.</span></button>
     </div>
   </div>
 
@@ -1779,6 +1781,7 @@ syncMemorySliders()
     <div style="color:var(--soft);font-weight:600;line-height:1.6">
       Le mode est volontairement simplifié : pas de catégories à choisir, pas d’options inutiles.
       L’application lance directement une session QCM au format de l’épreuve sélectionnée.
+      Le mode Calculs réflexes regroupe Trachtenberg, conversions nœuds/km/h, minutes → heures et carrés.
       Il n’y a plus de mix CSO/Maths 1/Maths 3, ni de catégories à choisir.
       Après chaque réponse, elle passe à la question suivante sans correction intermédiaire.
       Les corrections complètes, pièges, erreurs et diagnostics apparaissent uniquement à la fin.
@@ -1857,8 +1860,8 @@ syncMemorySliders()
 const cfg={exam:'cso',session:'sim',answerMode:'qcm',difficulty:'medium',noPause:true,cats:['percent','units','geometry','speed','chain','share','trap']};
 let state={questions:[],index:0,score:0,good:0,wrong:0,skipped:0,gross:0,start:0,qStart:0,duration:1080,timer:null,logs:[],locked:false,target:41};
 let eopnSaved=false, eopnHighlight=-1;
-const catNames={division:'Divisions',percent:'Pourcentages',units:'Conversions',geometry:'Surfaces/volumes',speed:'Vitesses',chain:'Proportionnalité',share:'Équations/partages',trap:'Pièges d’énoncé'};
-const examNames={cso:'CSO',math1:'Maths 1',math3:'Maths 3',reflex:'Réflexes',legacy:'Ancien historique'};
+const catNames={division:'Divisions',percent:'Pourcentages',units:'Conversions',geometry:'Surfaces/volumes',speed:'Vitesses',chain:'Proportionnalité',share:'Équations/partages',trap:'Pièges d’énoncé',trachtenberg:'Trachtenberg',knots:'Nœuds / km/h',time:'Minutes → heures',square:'Carrés'};
+const examNames={cso:'CSO',math1:'Maths 1',math3:'Maths 3',reflex:'Réflexes',calcReflex:'Calculs réflexes',legacy:'Ancien historique'};
 const diffNames={easy:'Facile',medium:'Moyen',hard:'Difficile',expert:'Expert'};
 const SCORE_KEY='eopnScores_v6', LEGACY_SCORE_KEY='eopnScores', MISSED_KEY='eopnMissedBank_v6', REPORT_KEY='eopnReportedQuestions_v6';
 function el(id){return document.getElementById(id)}
@@ -1868,7 +1871,7 @@ function rnd(min,max,dec=0){const n=Math.random()*(max-min)+min;return dec===0?M
 function rint(min,max){return Math.floor(Math.random()*(max-min+1))+min}
 function pick(a){return a[rint(0,a.length-1)]}
 function round(n,d=2){return Number(Number(n).toFixed(d))}
-function fmt(n,d=2){if(typeof n==='string')return n; if(!Number.isFinite(n))return '—'; let s=Number(n).toFixed(d); s=s.replace(/0+$/,'').replace(/[\.,]$/,''); return s.replace('.',',')}
+function fmt(n,d=2){if(typeof n==='string')return n; if(!Number.isFinite(n))return '—'; let s=Number(n).toFixed(d); if(s.includes('.'))s=s.replace(/0+$/,'').replace(/\.$/,''); return s.replace('.',',')}
 function pct(x){return Math.round(x)+'%'}
 function hmin(totalMin){totalMin=Math.round(totalMin); const h=Math.floor(totalMin/60),m=totalMin%60; return String(h).padStart(2,'0')+'h'+String(m).padStart(2,'0')+'m'}
 function bindGrid(id,key,multi=false){document.querySelectorAll('#'+id+' button').forEach(b=>b.addEventListener('click',()=>{if(multi){b.classList.toggle('active');cfg.cats=[...document.querySelectorAll('#catGrid .cat.active')].map(x=>x.dataset.cat); if(!cfg.cats.length){b.classList.add('active');cfg.cats=[b.dataset.cat]}}else{document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('active'));b.classList.add('active');cfg[key]=b.dataset.mode}}))}
@@ -2476,6 +2479,148 @@ function reflexOptionsFor(answer){
   shuffle(pool.filter(x=>x!==answer)).slice(0,4).forEach(x=>opts.push(x));
   return shuffle(opts);
 }
+
+function sigDecPlaces(x,sig=3){
+  x=Math.abs(Number(x));
+  if(!Number.isFinite(x)||x===0)return 0;
+  const exp=Math.floor(Math.log10(x));
+  return Math.max(0,sig-exp-1);
+}
+function fmtSig(x,sig=3){
+  if(!Number.isFinite(Number(x)))return '—';
+  let s=Number(x).toPrecision(sig);
+  if(s.includes('e'))s=Number(x).toFixed(sigDecPlaces(x,sig));
+  s=s.replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');
+  return s.replace('.',',');
+}
+function makeManualChoices(correct,labelsAndValues){
+  const used=[];
+  function add(label,value,isCorrect=false){
+    const key=String(label);
+    if(!used.some(x=>x.label===key))used.push({label:key,value:value,correct:isCorrect});
+  }
+  labelsAndValues.forEach(x=>add(x.label,x.value,!!x.correct));
+  return shuffle(used.slice(0,5));
+}
+function qManualNumeric(obj){
+  obj.kind='num';
+  obj=normalizeQ(obj);
+  return obj;
+}
+function trachtenbergMethod(n,m,ans){
+  if(m===11){
+    const digs=String(n).split('').map(Number);
+    const pairs=[];
+    for(let i=digs.length-1;i>=0;i--){pairs.unshift(digs[i]+(digs[i+1]||0));}
+    return `Méthode Trachtenberg ×11 : chaque chiffre est additionné avec son voisin de droite, en gérant les retenues. Pour ${n}, on lit mentalement ${digs.join(' | ')} et on forme les sommes voisines ${pairs.join(' | ')}. Cela revient à ${n} × 10 + ${n} = ${fmt(ans,0)}.`;
+  }
+  if(m===12){
+    return `Méthode Trachtenberg ×12 : de droite à gauche, on double le chiffre courant puis on ajoute son voisin de droite, avec les retenues. Version rapide équivalente : ${n} × 12 = ${n} × (10 + 2) = ${fmt(n*10,0)} + ${fmt(n*2,0)} = ${fmt(ans,0)}.`;
+  }
+  if(m===9){
+    return `Méthode Trachtenberg ×9 : multiplier par 10 puis retirer une fois le nombre. ${n} × 9 = ${n} × 10 - ${n} = ${fmt(n*10,0)} - ${fmt(n,0)} = ${fmt(ans,0)}.`;
+  }
+  if(m===25){
+    return `Réflexe ×25 : multiplier par 100 puis diviser par 4. ${n} × 25 = ${n} × 100 ÷ 4 = ${fmt(n*100,0)} ÷ 4 = ${fmt(ans,0)}.`;
+  }
+  return `Réflexe ×75 : 75 = 3 × 25. On fait donc ${n} × 3 × 25, ou encore ${n} × 3 × 100 ÷ 4. Ici ${n} × 3 = ${fmt(n*3,0)}, puis ${fmt(n*3,0)} × 100 ÷ 4 = ${fmt(ans,0)}.`;
+}
+function genTrachtenbergCalc(){
+  const m=pick([11,12,9,25,75]);
+  let n;
+  if(m===75)n=rint(12,180);
+  else if(m===25)n=rint(12,300);
+  else n=rint(12,999);
+  const ans=n*m;
+  const distractors=[ans+n,ans-n,ans+10,ans-10,Math.max(0,ans*10),Math.round(ans/10)];
+  return qNumeric({
+    exam:'calcReflex',cat:'trachtenberg',
+    text:`Méthode Trachtenberg / réflexe :\n${n} × ${m} = ?`,
+    answer:ans,decimals:0,tol:1,unit:'',distractors,
+    errorType:`multiplication réflexe ×${m}`,
+    method:trachtenbergMethod(n,m,ans),
+    quickMethod:`Reconnaître le multiplicateur utile : ×${m}, puis appliquer le raccourci adapté avant de poser le calcul.`,
+    trap:'Le piège est de poser toute la multiplication alors qu’un raccourci donne le résultat beaucoup plus vite.'
+  })
+}
+function genKnotsKmhCalc(){
+  const toKnots=Math.random()<0.5;
+  if(toKnots){
+    const v=pick([80,90,100,120,150,180,200,240,250,300,320,360,400,450,500,540,600,720,800,900]);
+    const ans=round(v*0.54,1);
+    return qNumeric({
+      exam:'calcReflex',cat:'knots',
+      text:`Conversion rapide :\n${v} km/h ≈ ? nœuds`,
+      answer:ans,decimals:1,tol:0.2,unit:'kt',
+      distractors:[round(v/2,1),round(v*0.5+v*0.04+v*0.0005,1),round(v*0.6,1),round(v*0.48,1)],
+      errorType:'conversion km/h vers nœuds',
+      method:`Méthode utilisée : km/h → nœuds ≈ ×0,54. Mentalement : ${v}/2 + 4% de ${v}. Ici ${v}/2 = ${fmt(v/2,1)} et 4% = ${fmt(v*0.04,1)}, donc ${fmt(v/2,1)} + ${fmt(v*0.04,1)} = ${fmt(ans,1)} kt.`,
+      quickMethod:`Divise par 2, puis ajoute 4% de la vitesse.`,
+      trap:'Ne pas utiliser la méthode ×1,85 : elle sert dans l’autre sens, de nœuds vers km/h.'
+    })
+  }
+  const k=pick([40,50,60,80,90,100,120,150,180,200,240,250,300,320,350,400,450,500]);
+  const ans=round(k*1.85,1);
+  return qNumeric({
+    exam:'calcReflex',cat:'knots',
+    text:`Conversion rapide :\n${k} kt ≈ ? km/h`,
+    answer:ans,decimals:1,tol:0.3,unit:'km/h',
+    distractors:[round(k*2,1),round(k*1.8,1),round(k*1.9,1),round(k*0.54,1)],
+    errorType:'conversion nœuds vers km/h',
+    method:`Méthode utilisée : nœuds → km/h ≈ ×1,85. Fais ${k} × 2 = ${fmt(k*2,1)}, puis retire 20% du nombre de départ : ${fmt(k*0.20,1)}, puis ajoute 5% du nombre de départ : ${fmt(k*0.05,1)}. Donc ${fmt(k*2,1)} - ${fmt(k*0.20,1)} + ${fmt(k*0.05,1)} = ${fmt(ans,1)} km/h.`,
+    quickMethod:`Doubler, enlever 20% du nombre de départ, ajouter 5% du nombre de départ.`,
+    trap:'Ne pas multiplier par 0,54 : ce coefficient sert pour km/h vers nœuds.'
+  })
+}
+function genMinutesHoursCalc(){
+  const mins=pick([5,7,8,10,12,15,18,20,24,25,30,35,40,45,50,55,70,75,80,90,100,110,115,120,135,150,180,210,240,300,360,420,480,540]);
+  const exact=mins/60;
+  const label=fmtSig(exact,3)+' h';
+  const dec=sigDecPlaces(exact,3);
+  const choices=makeManualChoices(exact,[
+    {label:label,value:exact,correct:true},
+    {label:fmtSig(mins/100,3)+' h',value:mins/100},
+    {label:fmtSig(exact*10,3)+' h',value:exact*10},
+    {label:fmtSig(exact/10,3)+' h',value:exact/10},
+    {label:fmtSig(Math.round(exact*100)/100,3)+' h',value:Math.round(exact*100)/100}
+  ]);
+  return qManualNumeric({
+    exam:'calcReflex',cat:'time',
+    text:`Passage minutes → heures :\n${mins} min = ?`,
+    answer:exact,answerLabel:label,decimals:dec,tol:Math.max(0.001,Math.pow(10,-dec)*0.51),unit:'h',choices,
+    errorType:'conversion minutes en heures',
+    method:`Méthode utilisée : convertir des minutes en heures revient à diviser par 60. Ici ${mins} ÷ 60 = ${fmtSig(exact,3)} h. On garde au maximum 3 chiffres significatifs, donc la réponse affichée est ${label}.`,
+    quickMethod:`Divise par 60, puis arrondis à 3 chiffres significatifs maximum.`,
+    trap:'Le piège est de diviser par 100 au lieu de diviser par 60.'
+  })
+}
+function genSquareCalc(){
+  const n=rint(11,100);
+  const ans=n*n;
+  const base=Math.round(n/10)*10;
+  const d=n-base;
+  let method;
+  if(String(n).endsWith('5')){
+    const a=Math.floor(n/10);
+    method=`Méthode rapide pour un nombre qui finit par 5 : ${n}² = ${a} × ${a+1} puis 25 à la fin. ${a} × ${a+1} = ${a*(a+1)}, donc ${n}² = ${fmt(ans,0)}.`;
+  }else{
+    const sign=d>=0?'+':'−';
+    method=`Méthode utilisée : carré proche d’une dizaine. ${n} = ${base} ${sign} ${Math.abs(d)}. Donc ${n}² = ${base}² ${sign} 2×${base}×${Math.abs(d)} + ${Math.abs(d)}² = ${fmt(base*base,0)} ${sign} ${fmt(2*base*Math.abs(d),0)} + ${fmt(d*d,0)} = ${fmt(ans,0)}.`;
+  }
+  return qNumeric({
+    exam:'calcReflex',cat:'square',
+    text:`Carré rapide :\n${n}² = ?`,
+    answer:ans,decimals:0,tol:1,unit:'',
+    distractors:[(n+1)*(n+1),(n-1)*(n-1),n*10+n,Math.max(0,ans+100),Math.max(0,ans-100)],
+    errorType:'carré mental',method,
+    quickMethod:'Prendre la dizaine la plus proche, puis utiliser (a ± b)² = a² ± 2ab + b².',
+    trap:'Le piège est de confondre n² avec n × 2 ou avec n × 10.'
+  })
+}
+function genCalcReflexQuestion(){
+  return oneOf([genTrachtenbergCalc,genKnotsKmhCalc,genMinutesHoursCalc,genSquareCalc]);
+}
+
 function genReflexQuestion(){
   const exams=['cso','math1','math3'];
   let base=null, source='cso';
@@ -2500,6 +2645,7 @@ function genReflexQuestion(){
 function generateByExam(exam,cat){
   let q;
   if(exam==='reflex') q=genReflexQuestion();
+  else if(exam==='calcReflex') q=genCalcReflexQuestion();
   else if(exam==='cso') q=cat?generateCSOByCat(cat):generateCSOQuestion();
   else if(exam==='math1'){
     for(let i=0;i<40;i++){q=genMath1Question(); if(!cat||q.cat===cat)break;}
@@ -2550,6 +2696,7 @@ function setupSession(){
   if(cfg.session==='revision')return {n:Math.min(20,Math.max(8,getMissedBank().length||10)),d:15*60,target:55};
   if(cfg.session==='free')return {n:freeN,d:freeD,target:Math.round(freeD/freeN)};
   if(cfg.exam==='reflex')return {n:25,d:15*60,target:36};
+  if(cfg.exam==='calcReflex')return {n:30,d:12*60,target:24};
   if(cfg.exam==='math1' && cfg.session==='sim')return {n:15,d:45*60,target:180};
   if(cfg.exam==='math1' && cfg.session==='sprint')return {n:8,d:15*60,target:112};
   if(cfg.exam==='math3' && cfg.session==='sim')return {n:25,d:40*60,target:96};
@@ -2642,7 +2789,7 @@ function renderEopnLB(){
   const groups={}; scores.forEach(s=>{const key=s.examLabel||examNames[s.exam]||'EOPN'; if(!groups[key])groups[key]=[]; groups[key].push(s)});
   rows.innerHTML=Object.entries(groups).map(([g,arr])=>`<div class="historyGroup"><div class="historyTitle">${escapeHTML(g)}</div><div class="lbHead"><span>#</span><span>Nom</span><span>Score</span><span>Justesse</span><span>Date</span></div>${arr.slice(0,12).map((s,i)=>`<div class="lbLine ${scores.indexOf(s)===eopnHighlight?'hl':''}"><span>${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</span><span>${escapeHTML(s.name||'Anonyme')} · ${escapeHTML(s.mode||'')}</span><span>${s.score}</span><span>${s.acc}%</span><span>${s.date}</span></div>`).join('')}</div>`).join('');
 }
-function getAnswerText(q){return q.kind==='text'?q.answer:fmt(q.answer,q.decimals||0)+(q.unit?' '+q.unit:'')}
+function getAnswerText(q){return q.answerLabel?q.answerLabel:(q.kind==='text'?q.answer:fmt(q.answer,q.decimals||0)+(q.unit?' '+q.unit:''))}
 function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function showReview(){
   const list=el('reviewList');
