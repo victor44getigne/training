@@ -66,12 +66,14 @@ body{background:linear-gradient(180deg,#f8f6f2 0%,#f3f6f4 100%)}
 .card.theme-memory{--card-accent:#a77a8b;--card-hover:#8e6575;--card-soft:#f3e7eb;--card-rgb:167,122,139}
 .card.theme-eopn{--card-accent:#b57966;--card-hover:#9c6554;--card-soft:#f5e6df;--card-rgb:181,121,102}
 .card.theme-culture{--card-accent:#5f9679;--card-hover:#4d7d65;--card-soft:#e2f0e8;--card-rgb:95,150,121}
+.card.theme-times{--card-accent:#7286a0;--card-hover:#5e7189;--card-soft:#e7edf4;--card-rgb:114,134,160}
 .note{background:rgba(255,253,251,.9)}
 .topBar{background:rgba(248,246,242,.93)}
 body[data-theme="math"]{--primary:#6f907a;--primary-h:#5b7967}
 body[data-theme="memory"]{--primary:#a77a8b;--primary-h:#8e6575}
 body[data-theme="eopn"]{--primary:#b57966;--primary-h:#9c6554}
 body[data-theme="culture"]{--primary:#5f9679;--primary-h:#4d7d65}
+body[data-theme="times"]{--primary:#7286a0;--primary-h:#5e7189}
 body[data-theme] .backBtn:hover{border-color:var(--primary);color:var(--primary)}
 </style>
 </head>
@@ -89,6 +91,14 @@ body[data-theme] .backBtn:hover{border-color:var(--primary);color:var(--primary)
           <p>Entraînement avec calculs classiques ou mode approximation pour mesurer la précision de tes divisions avec décimales.</p>
         </div>
         <button type="button">Lancer Calcul mental</button>
+      </article>
+      <article class="card theme-times" onclick="openTraining('times')">
+        <div>
+          <div class="icon">✖️</div>
+          <h2>Tables de multiplication</h2>
+          <p>Automatise les produits de 2 à 9, avec réponse au clavier ou à la voix et multiplication affichée, prononcée ou les deux.</p>
+        </div>
+        <button type="button">Lancer les multiplications</button>
       </article>
       <article class="card theme-memory" onclick="openTraining('memory')">
         <div>
@@ -129,7 +139,7 @@ body[data-theme] .backBtn:hover{border-color:var(--primary);color:var(--primary)
     <div class="appTitle" id="appTitle">Entraînement</div>
     <div style="width:170px"></div>
   </div>
-  <iframe id="appFrame" title="Entraînement sélectionné"></iframe>
+  <iframe id="appFrame" title="Entraînement sélectionné" allow="microphone"></iframe>
 </section>
 
 <template id="tplMath">
@@ -2885,6 +2895,305 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
 </template>
 
 
+<template id="tplTimes">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Tables de multiplication</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6f8;--panel:#fff;--border:#dce3ea;--primary:#7286a0;--primary-h:#5e7189;--primary-lt:#e7edf4;--primary-xlt:#f2f5f8;--success:#3d8a65;--success-lt:#e7f3ec;--danger:#b85b5b;--danger-lt:#f8e9e9;--warning:#a67a43;--warning-lt:#f7efe3;--text:#263238;--soft:#69757a;--xsoft:#97a1a5;--shadow:0 5px 18px rgba(65,78,92,.08);--r:16px;--rs:11px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html{height:100%}body{min-height:100%;background:linear-gradient(180deg,#f4f6f8,#f8f6f2);color:var(--text);font-family:'Inter',sans-serif;padding:24px 16px 48px}.screen{display:none;width:100%;max-width:760px;margin:0 auto;animation:up .18s ease}.screen.active{display:block}@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.logo{text-align:center;font-size:clamp(30px,6vw,44px);font-weight:800;letter-spacing:-1.4px;margin-bottom:7px}.logo span{color:var(--primary)}.tagline{text-align:center;color:var(--soft);font-size:14px;font-weight:500;line-height:1.5;margin-bottom:24px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}.pt{font-size:13px;font-weight:800;margin-bottom:13px}.small{font-size:12px;line-height:1.55;color:var(--soft)}
+.choiceGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.choiceBtn,.durBtn{border:1.5px solid var(--border);background:#fff;color:var(--soft);border-radius:var(--rs);padding:13px 10px;font:750 12px/1.4 'Inter',sans-serif;cursor:pointer;transition:.15s;text-align:center}.choiceBtn:hover,.durBtn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-xlt)}.choiceBtn.active,.durBtn.active{background:var(--primary-lt);border-color:#bdc9d6;color:var(--primary);box-shadow:0 0 0 3px rgba(114,134,160,.08)}.choiceBtn:disabled{opacity:.45;cursor:not-allowed}.durGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.supportNote{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--primary-xlt);font-size:11px;line-height:1.5;color:var(--soft)}.supportNote.warn{background:var(--warning-lt);color:#835f32}
+.btnP,.btnG,.btnO{font-family:'Inter',sans-serif;cursor:pointer;transition:.15s}.btnP{width:100%;border:0;background:var(--primary);color:white;border-radius:var(--r);padding:16px 20px;font-size:15px;font-weight:800;box-shadow:0 4px 12px rgba(114,134,160,.18)}.btnP:hover{background:var(--primary-h);transform:translateY(-1px)}.btnG{border:1.5px solid var(--border);background:#fff;color:var(--text);border-radius:var(--rs);padding:11px 13px;font-size:12px;font-weight:750}.btnG:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-xlt)}.btnO{border:0;background:transparent;color:var(--soft);padding:8px 4px;font-size:12px;font-weight:700}.btnO:hover{color:var(--primary)}
+.menuStats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{border:1px solid var(--border);border-radius:13px;background:#fff;padding:13px 8px;text-align:center}.sv{display:block;font-size:22px;font-weight:800;color:var(--primary);margin-bottom:3px}.sl{font-size:10px;text-transform:uppercase;letter-spacing:.45px;font-weight:800;color:var(--xsoft)}
+.gameTop{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;margin-bottom:12px}.timerTrack{height:7px;background:var(--border);border-radius:99px;overflow:hidden}.timerFill{height:100%;width:100%;background:var(--primary);border-radius:99px;transition:width 1s linear}.clock{font-size:14px;font-weight:800;color:var(--primary);min-width:44px;text-align:right}.scoreMini{font-size:12px;font-weight:800;color:var(--soft);white-space:nowrap}
+.qCard{background:#fff;border:1px solid var(--border);border-radius:22px;min-height:250px;padding:30px 24px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-bottom:14px}.question{font-size:clamp(45px,11vw,82px);font-weight:800;letter-spacing:-3px;line-height:1;color:var(--text)}.listenPrompt{display:none;align-items:center;flex-direction:column;gap:12px;color:var(--primary)}.listenPrompt.show{display:flex}.speaker{font-size:54px}.listenText{font-size:16px;font-weight:800}.subPrompt{margin-top:16px;min-height:22px;font-size:12px;font-weight:650;color:var(--soft)}
+.answerPanel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}.keyboardRow{display:flex;gap:9px}.answerInput{flex:1;min-width:0;border:2px solid var(--border);border-radius:13px;padding:15px;font:800 25px/1 'Inter',sans-serif;text-align:center;outline:none;color:var(--text)}.answerInput:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(114,134,160,.1)}.validateBtn{border:0;background:var(--primary);color:#fff;border-radius:13px;padding:0 20px;font-weight:800;cursor:pointer}.voiceArea{display:none;text-align:center}.voiceArea.show{display:block}.micBtn{width:72px;height:72px;border:0;border-radius:50%;background:var(--primary);color:white;font-size:30px;cursor:pointer;box-shadow:0 7px 18px rgba(114,134,160,.24);transition:.15s}.micBtn.listening{animation:pulse 1.15s infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(114,134,160,.32)}50%{box-shadow:0 0 0 13px rgba(114,134,160,0)}}.voiceState{margin-top:10px;font-size:12px;font-weight:750;color:var(--soft);min-height:18px}.heard{margin-top:7px;font-size:13px;color:var(--text);font-weight:750;min-height:20px}.fallback{margin-top:12px}.feedback{display:none;margin-bottom:14px;border-radius:var(--r);padding:15px 16px;font-size:13px;line-height:1.5;font-weight:700}.feedback.show{display:block}.feedback.ok{background:var(--success-lt);color:var(--success);border:1px solid #b9dec9}.feedback.bad{background:var(--danger-lt);color:var(--danger);border:1px solid #e8bdbd}.feedback strong{font-size:16px}.actions{display:flex;gap:8px;justify-content:space-between;align-items:center}.actions .btnG{flex:1}
+.endHero{text-align:center;padding:6px 0 18px}.endScore{font-size:clamp(58px,13vw,82px);font-weight:800;color:var(--primary);letter-spacing:-3px}.endLabel{font-size:13px;color:var(--soft);font-weight:650}.endStats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.weakList{display:flex;flex-wrap:wrap;gap:8px}.weakChip{border:1px solid var(--border);border-radius:10px;background:#fff;padding:8px 10px;font-size:12px;font-weight:750;color:var(--soft)}.weakChip strong{color:var(--text)}
+@media(max-width:620px){body{padding:16px 12px 38px}.durGrid{grid-template-columns:repeat(3,1fr)}.gameTop{grid-template-columns:1fr auto}.scoreMini{grid-column:1/-1;text-align:right}.qCard{min-height:220px;padding:26px 18px}.endStats{grid-template-columns:repeat(2,1fr)}}@media(max-width:400px){.choiceGrid{grid-template-columns:1fr}.durGrid{grid-template-columns:repeat(2,1fr)}.keyboardRow{flex-direction:column}.validateBtn{padding:14px}}
+</style>
+</head>
+<body>
+<div class="screen active" id="sMenu">
+  <div class="logo">Tables <span>réflexes</span></div>
+  <div class="tagline">64 opérations distinctes : de 2 × 2 à 9 × 9. L'ordre compte : 7 × 8 et 8 × 7 sont suivis séparément.</div>
+
+  <div class="panel">
+    <div class="pt">⏱ Durée</div>
+    <div class="durGrid" id="durGrid">
+      <button class="durBtn" data-v="60">1 min</button>
+      <button class="durBtn active" data-v="120">2 min</button>
+      <button class="durBtn" data-v="180">3 min</button>
+      <button class="durBtn" data-v="300">5 min</button>
+      <button class="durBtn" data-v="600">10 min</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">✅ Comment répondre ?</div>
+    <div class="choiceGrid" id="answerModeGrid">
+      <button class="choiceBtn active" data-mode="keyboard">⌨️ Écrire le résultat</button>
+      <button class="choiceBtn" data-mode="voice" id="voiceModeBtn">🎙️ Dire le résultat</button>
+    </div>
+    <div class="supportNote" id="voiceSupport">La réponse vocale utilise la reconnaissance vocale du navigateur. Le micro doit être autorisé.</div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">🔊 Comment présenter la multiplication ?</div>
+    <div class="choiceGrid" id="promptModeGrid">
+      <button class="choiceBtn active" data-mode="display">👁️ Affichée</button>
+      <button class="choiceBtn" data-mode="spoken" id="spokenBtn">🔊 Prononcée</button>
+      <button class="choiceBtn" data-mode="both" id="bothBtn">👁️ + 🔊 Les deux</button>
+    </div>
+    <div class="supportNote" id="speechSupport">En mode prononcé, l'énoncé est lu en français avant que le chronomètre de réponse ne démarre.</div>
+  </div>
+
+  <div class="panel">
+    <div class="pt">📊 Progression locale</div>
+    <div class="menuStats">
+      <div class="stat"><span class="sv" id="seenOps">0/64</span><span class="sl">Opérations vues</span></div>
+      <div class="stat"><span class="sv" id="globalAcc">—</span><span class="sl">Réussite</span></div>
+      <div class="stat"><span class="sv" id="globalAvg">—</span><span class="sl">Temps moyen</span></div>
+    </div>
+    <div style="margin-top:10px;text-align:right"><button class="btnO" onclick="resetProgress()">Réinitialiser la progression</button></div>
+  </div>
+
+  <button class="btnP" onclick="startSession()">▶ Lancer la session</button>
+</div>
+
+<div class="screen" id="sGame">
+  <div class="gameTop">
+    <div class="timerTrack"><div class="timerFill" id="timerFill"></div></div>
+    <div class="clock" id="clock">2:00</div>
+    <div class="scoreMini" id="scoreMini">0 / 0</div>
+  </div>
+
+  <div class="qCard">
+    <div class="question" id="questionText">7 × 8</div>
+    <div class="listenPrompt" id="listenPrompt"><div class="speaker">🔊</div><div class="listenText">Écoute la multiplication…</div></div>
+    <div class="subPrompt" id="subPrompt"></div>
+  </div>
+
+  <div class="answerPanel">
+    <div class="keyboardRow" id="keyboardArea">
+      <input id="answerInput" class="answerInput" type="text" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="Résultat">
+      <button class="validateBtn" onclick="validateKeyboard()">Valider ↵</button>
+    </div>
+    <div class="voiceArea" id="voiceArea">
+      <button class="micBtn" id="micBtn" onclick="restartListening()" aria-label="Répondre au micro">🎙️</button>
+      <div class="voiceState" id="voiceState">Le micro démarrera automatiquement.</div>
+      <div class="heard" id="heard"></div>
+      <div class="fallback"><button class="btnG" onclick="switchToKeyboard()">⌨️ Passer au clavier</button></div>
+    </div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+  <div class="actions">
+    <button class="btnG" onclick="endSession()">■ Terminer la session</button>
+  </div>
+</div>
+
+<div class="screen" id="sEnd">
+  <div class="logo" style="font-size:clamp(26px,5vw,36px)">Session terminée</div>
+  <div class="endHero"><div class="endScore" id="endPct">0%</div><div class="endLabel" id="endLabel">0 bonne réponse</div></div>
+  <div class="panel">
+    <div class="endStats">
+      <div class="stat"><span class="sv" id="endCorrect">0</span><span class="sl">Correctes</span></div>
+      <div class="stat"><span class="sv" id="endAttempts">0</span><span class="sl">Réponses</span></div>
+      <div class="stat"><span class="sv" id="endAvg">—</span><span class="sl">Temps moyen</span></div>
+      <div class="stat"><span class="sv" id="endBest">—</span><span class="sl">Meilleur temps</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="pt">🎯 À renforcer</div>
+    <div class="weakList" id="weakList"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+    <button class="btnP" onclick="startSession()">↻ Rejouer</button>
+    <button class="btnG" onclick="goMenu()">Réglages</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY='multiplicationTrainer_v1';
+const CONFIG_KEY='multiplicationTrainerConfig_v1';
+const SpeechRecognitionAPI=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+const hasRecognition=!!SpeechRecognitionAPI;
+const hasSynthesis='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+let cfg={duration:120,answerMode:'keyboard',promptMode:'display'};
+let progress=loadProgress();
+let timer=null,timeLeft=0,totalTime=0,active=false,locked=false;
+let current=null,lastKey='',questionStartedAt=0;
+let correct=0,attempts=0,totalResponseMs=0,bestResponseMs=null;
+let sessionByKey={};
+let recognition=null,shouldListen=false,recognitionRunning=false;
+let questionToken=0;
+
+function $(id){return document.getElementById(id)}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
+function loadProgress(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}}
+function saveProgress(){localStorage.setItem(STORAGE_KEY,JSON.stringify(progress))}
+function saveConfig(){localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg))}
+function loadConfig(){try{const x=JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}');if(x.duration)cfg.duration=x.duration;if(x.answerMode)cfg.answerMode=x.answerMode;if(x.promptMode)cfg.promptMode=x.promptMode}catch(e){}}
+function opKey(a,b){return a+'x'+b}
+function statFor(key){if(!progress[key])progress[key]={seen:0,correct:0,wrong:0,totalMs:0,bestMs:null};return progress[key]}
+function allOps(){const a=[];for(let x=2;x<=9;x++)for(let y=2;y<=9;y++)a.push({a:x,b:y,key:opKey(x,y),ans:x*y});return a}
+function fmtMs(ms){if(ms==null||!isFinite(ms))return '—';return (ms/1000).toFixed(ms<10000?1:0).replace('.',',')+' s'}
+function pct(a,b){return b?Math.round(a/b*100):0}
+
+function weightFor(op){
+  const s=progress[op.key];
+  if(!s||!s.seen)return 2.2;
+  const acc=s.correct/s.seen;
+  let w=1+(1-acc)*4;
+  w+=Math.min(2.5,s.wrong*.22);
+  if(s.seen<3)w+=.7;
+  return Math.max(1,Math.min(7,w));
+}
+function chooseOp(){
+  let ops=allOps();
+  if(lastKey&&ops.length>1)ops=ops.filter(o=>o.key!==lastKey);
+  const weighted=ops.map(o=>({o,w:weightFor(o)}));
+  const sum=weighted.reduce((t,x)=>t+x.w,0);let r=Math.random()*sum;
+  for(const x of weighted){r-=x.w;if(r<=0)return x.o}
+  return weighted[weighted.length-1].o;
+}
+
+function numberToFrench(n){
+  const u=['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize'];
+  if(n<=16)return u[n];
+  if(n<20)return 'dix-'+u[n-10];
+  if(n<70){const t={20:'vingt',30:'trente',40:'quarante',50:'cinquante',60:'soixante'};const d=Math.floor(n/10)*10,r=n%10;return t[d]+(r===0?'':r===1?'-et-un':'-'+u[r])}
+  if(n<80){const r=n-60;return 'soixante-'+(r===11?'et-onze':numberToFrench(r))}
+  if(n===80)return 'quatre-vingts';
+  return 'quatre-vingt-'+numberToFrench(n-80);
+}
+function normSpeech(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[-']/g,' ').replace(/\bvingts\b/g,'vingt').replace(/\bet\b/g,' ').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+const speechNumberMap=(()=>{const m={};for(let n=0;n<=99;n++){m[normSpeech(numberToFrench(n))]=n;m[String(n)]=n}return m})();
+function parseSpeechNumber(s){const raw=String(s||'');const d=raw.match(/\b\d{1,2}\b/);if(d)return Number(d[0]);const n=normSpeech(raw);return Object.prototype.hasOwnProperty.call(speechNumberMap,n)?speechNumberMap[n]:null}
+
+function setupRecognition(){
+  if(!hasRecognition)return;
+  recognition=new SpeechRecognitionAPI();recognition.lang='fr-FR';recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=5;
+  recognition.onstart=()=>{recognitionRunning=true;$('micBtn').classList.add('listening');$('voiceState').textContent='Je t’écoute…'};
+  recognition.onresult=e=>{
+    if(!active||locked||cfg.answerMode!=='voice')return;
+    const res=e.results[0];let chosen=null,heard='';
+    for(let i=0;i<res.length;i++){const t=res[i].transcript;const v=parseSpeechNumber(t);if(i===0)heard=t;if(v===current.ans){chosen={value:v,text:t};break}if(chosen===null&&v!==null)chosen={value:v,text:t}}
+    $('heard').textContent='Entendu : « '+heard+' »';
+    if(chosen===null){$('voiceState').textContent='Je n’ai pas compris de nombre. Réessaie.';shouldListen=true;return}
+    shouldListen=false;validateAnswer(chosen.value,'voice',chosen.text);
+  };
+  recognition.onerror=e=>{
+    recognitionRunning=false;$('micBtn').classList.remove('listening');
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){$('voiceState').textContent='Micro non autorisé. Tu peux passer au clavier.';shouldListen=false;return}
+    if(active&&cfg.answerMode==='voice'&&!locked){$('voiceState').textContent=e.error==='no-speech'?'Aucune réponse entendue. Je réécoute…':'Reconnaissance interrompue. Réessaie.'}
+  };
+  recognition.onend=()=>{
+    recognitionRunning=false;$('micBtn').classList.remove('listening');
+    if(shouldListen&&active&&cfg.answerMode==='voice'&&!locked)setTimeout(()=>beginListening(),250);
+  };
+}
+function stopListening(){shouldListen=false;if(recognition&&recognitionRunning){try{recognition.stop()}catch(e){}}}
+function beginListening(force){
+  if(!active||locked||cfg.answerMode!=='voice')return;
+  if(!hasRecognition){switchToKeyboard();return}
+  shouldListen=true;
+  if(recognitionRunning){if(force){try{recognition.stop()}catch(e){};setTimeout(()=>beginListening(),220)}return}
+  try{recognition.start()}catch(e){setTimeout(()=>{if(shouldListen&&!recognitionRunning)beginListening()},300)}
+}
+function restartListening(){$('heard').textContent='';beginListening(true)}
+
+function speakPrompt(done){
+  if(!hasSynthesis){done();return}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(numberToFrench(current.a)+' fois '+numberToFrench(current.b));
+  u.lang='fr-FR';u.rate=.92;u.pitch=1;
+  let fired=false;const finish=()=>{if(fired)return;fired=true;done()};
+  u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);setTimeout(finish,4500);
+}
+function afterPrompt(){
+  if(!active||locked)return;
+  questionStartedAt=performance.now();
+  $('answerInput').disabled=false;
+  if(cfg.answerMode==='voice'){beginListening()}else{setTimeout(()=>$('answerInput').focus(),30)}
+}
+function renderQuestion(){
+  locked=false;questionToken++;stopListening();if(hasSynthesis)speechSynthesis.cancel();
+  current=chooseOp();lastKey=current.key;
+  $('feedback').className='feedback';$('feedback').innerHTML='';$('heard').textContent='';$('answerInput').value='';$('answerInput').disabled=(cfg.answerMode==='keyboard'&&(cfg.promptMode==='spoken'||cfg.promptMode==='both'));
+  $('questionText').style.display=(cfg.promptMode==='display'||cfg.promptMode==='both')?'block':'none';
+  $('listenPrompt').classList.toggle('show',cfg.promptMode==='spoken');
+  $('questionText').textContent=current.a+' × '+current.b;
+  $('subPrompt').textContent=cfg.answerMode==='voice'?'Réponds à voix haute.':'Entre le résultat puis appuie sur Entrée.';
+  $('keyboardArea').style.display=cfg.answerMode==='keyboard'?'flex':'none';
+  $('voiceArea').classList.toggle('show',cfg.answerMode==='voice');
+  $('voiceState').textContent=cfg.answerMode==='voice'?'Préparation du micro…':'';
+  if(cfg.promptMode==='spoken'||cfg.promptMode==='both')speakPrompt(afterPrompt);else afterPrompt();
+}
+
+function validateKeyboard(){const raw=$('answerInput').value.trim();if(!raw)return;const v=Number(raw.replace(',','.'));if(!Number.isFinite(v))return;validateAnswer(v,'keyboard',raw)}
+function validateAnswer(value,source,spokenText){
+  if(!active||locked||!current)return;locked=true;stopListening();if(hasSynthesis)speechSynthesis.cancel();
+  const elapsed=Math.max(0,performance.now()-questionStartedAt);attempts++;totalResponseMs+=elapsed;if(bestResponseMs===null||elapsed<bestResponseMs)bestResponseMs=elapsed;
+  const ok=Number(value)===current.ans;if(ok)correct++;
+  const s=statFor(current.key);s.seen++;if(ok)s.correct++;else s.wrong++;s.totalMs+=elapsed;if(s.bestMs===null||elapsed<s.bestMs)s.bestMs=elapsed;saveProgress();
+  if(!sessionByKey[current.key])sessionByKey[current.key]={a:current.a,b:current.b,seen:0,correct:0,wrong:0};const ss=sessionByKey[current.key];ss.seen++;if(ok)ss.correct++;else ss.wrong++;
+  const f=$('feedback');f.className='feedback show '+(ok?'ok':'bad');
+  const given=source==='voice'&&spokenText?'« '+spokenText+' »':String(value);
+  f.innerHTML=ok?'<strong>✓ Correct : '+current.a+' × '+current.b+' = '+current.ans+'</strong><br>Réponse en '+fmtMs(elapsed)+'.':'<strong>✗ '+current.a+' × '+current.b+' = '+current.ans+'</strong><br>Ta réponse : '+escapeHtml(given)+'.';
+  updateHud();updateMenuStats();
+  setTimeout(()=>{if(active&&timeLeft>0)renderQuestion()},ok?520:850);
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function tick(){if(!active)return;timeLeft--;updateHud();if(timeLeft<=0)endSession()}
+function updateHud(){const m=Math.floor(Math.max(0,timeLeft)/60),s=String(Math.max(0,timeLeft)%60).padStart(2,'0');$('clock').textContent=m+':'+s;$('scoreMini').textContent=correct+' / '+attempts;$('timerFill').style.width=(totalTime?Math.max(0,timeLeft)/totalTime*100:0)+'%'}
+function startSession(){
+  stopListening();if(hasSynthesis)speechSynthesis.cancel();clearInterval(timer);correct=0;attempts=0;totalResponseMs=0;bestResponseMs=null;sessionByKey={};lastKey='';timeLeft=cfg.duration;totalTime=cfg.duration;active=true;locked=false;show('sGame');updateHud();renderQuestion();timer=setInterval(tick,1000)
+}
+function endSession(){
+  if(!active&&$('sEnd').classList.contains('active'))return;active=false;locked=true;clearInterval(timer);stopListening();if(hasSynthesis)speechSynthesis.cancel();
+  const p=attempts?pct(correct,attempts):0;$('endPct').textContent=p+'%';$('endLabel').textContent=correct+' bonne'+(correct>1?'s':'')+' réponse'+(correct>1?'s':'')+' sur '+attempts;$('endCorrect').textContent=correct;$('endAttempts').textContent=attempts;$('endAvg').textContent=attempts?fmtMs(totalResponseMs/attempts):'—';$('endBest').textContent=bestResponseMs!==null?fmtMs(bestResponseMs):'—';renderWeak();updateMenuStats();show('sEnd')
+}
+function renderWeak(){
+  let arr=Object.values(sessionByKey).filter(x=>x.wrong>0).sort((a,b)=>b.wrong-a.wrong||a.correct-b.correct);
+  if(!arr.length){arr=allOps().map(o=>{const s=progress[o.key];return s&&s.seen?{a:o.a,b:o.b,wrong:s.wrong,correct:s.correct,seen:s.seen,acc:s.correct/s.seen}:null}).filter(Boolean).sort((a,b)=>(a.acc??(a.correct/a.seen))-(b.acc??(b.correct/b.seen))).slice(0,6)}else arr=arr.slice(0,8);
+  $('weakList').innerHTML=arr.length?arr.map(x=>'<span class="weakChip"><strong>'+x.a+' × '+x.b+'</strong> · '+(x.seen?pct(x.correct,x.seen):pct(x.correct,x.correct+x.wrong))+'%</span>').join(''):'<span class="small">Aucune faiblesse détectée pendant cette session.</span>';
+}
+function goMenu(){active=false;locked=false;clearInterval(timer);stopListening();if(hasSynthesis)speechSynthesis.cancel();applyConfigUI();updateMenuStats();show('sMenu')}
+function switchToKeyboard(){cfg.answerMode='keyboard';saveConfig();applyConfigUI();stopListening();$('keyboardArea').style.display='flex';$('voiceArea').classList.remove('show');$('answerInput').disabled=false;$('subPrompt').textContent='Entre le résultat puis appuie sur Entrée.';questionStartedAt=performance.now();setTimeout(()=>$('answerInput').focus(),20)}
+function updateMenuStats(){
+  const vals=Object.values(progress).filter(s=>s&&s.seen);const seen=vals.length,totalSeen=vals.reduce((t,s)=>t+s.seen,0),totalCor=vals.reduce((t,s)=>t+s.correct,0),totalMs=vals.reduce((t,s)=>t+s.totalMs,0);$('seenOps').textContent=seen+'/64';$('globalAcc').textContent=totalSeen?pct(totalCor,totalSeen)+'%':'—';$('globalAvg').textContent=totalSeen?fmtMs(totalMs/totalSeen):'—'
+}
+function resetProgress(){if(!confirm('Réinitialiser toutes les statistiques des 64 multiplications ?'))return;progress={};saveProgress();updateMenuStats()}
+function applyConfigUI(){
+  document.querySelectorAll('#durGrid .durBtn').forEach(b=>b.classList.toggle('active',Number(b.dataset.v)===cfg.duration));
+  document.querySelectorAll('#answerModeGrid .choiceBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===cfg.answerMode));
+  document.querySelectorAll('#promptModeGrid .choiceBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===cfg.promptMode));
+}
+function bindMenus(){
+  document.querySelectorAll('#durGrid .durBtn').forEach(b=>b.addEventListener('click',()=>{cfg.duration=Number(b.dataset.v);applyConfigUI();saveConfig()}));
+  document.querySelectorAll('#answerModeGrid .choiceBtn').forEach(b=>b.addEventListener('click',()=>{if(b.disabled)return;cfg.answerMode=b.dataset.mode;applyConfigUI();saveConfig()}));
+  document.querySelectorAll('#promptModeGrid .choiceBtn').forEach(b=>b.addEventListener('click',()=>{if(b.disabled)return;cfg.promptMode=b.dataset.mode;applyConfigUI();saveConfig()}));
+  $('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();validateKeyboard()}})
+}
+function detectSupport(){
+  if(!hasRecognition){$('voiceModeBtn').disabled=true;$('voiceSupport').classList.add('warn');$('voiceSupport').textContent='La reconnaissance vocale n’est pas disponible dans ce navigateur : le mode clavier reste utilisable.';if(cfg.answerMode==='voice')cfg.answerMode='keyboard'}
+  if(!hasSynthesis){$('spokenBtn').disabled=true;$('bothBtn').disabled=true;$('speechSupport').classList.add('warn');$('speechSupport').textContent='La lecture vocale des multiplications n’est pas disponible dans ce navigateur.';if(cfg.promptMode!=='display')cfg.promptMode='display'}
+}
+loadConfig();detectSupport();setupRecognition();bindMenus();applyConfigUI();updateMenuStats();
+</script>
+</body>
+</html>
+</template>
+
 <template id="tplCulture">
 <!DOCTYPE html>
 <html lang="fr">
@@ -3370,6 +3679,9 @@ function openTraining(kind) {
   if (kind === 'math') {
     frame.srcdoc = document.getElementById('tplMath').innerHTML;
     title.textContent = 'Calcul mental';
+  } else if (kind === 'times') {
+    frame.srcdoc = document.getElementById('tplTimes').innerHTML;
+    title.textContent = 'Tables de multiplication';
   } else if (kind === 'memory') {
     frame.srcdoc = document.getElementById('tplMemory').innerHTML;
     title.textContent = 'Mémoire additive';
