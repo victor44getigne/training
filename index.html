@@ -2930,6 +2930,7 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
 .answerPanel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}.keyboardRow{display:flex;gap:9px}.answerInput{flex:1;min-width:0;border:2px solid var(--border);border-radius:13px;padding:15px;font:800 25px/1 'Inter',sans-serif;text-align:center;outline:none;color:var(--text)}.answerInput:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(114,134,160,.1)}.validateBtn{border:0;background:var(--primary);color:#fff;border-radius:13px;padding:0 20px;font-weight:800;cursor:pointer}.feedback{display:none;margin-bottom:14px;border-radius:var(--r);padding:15px 16px;font-size:13px;line-height:1.5;font-weight:700}.feedback.show{display:block}.feedback.ok{background:var(--success-lt);color:var(--success);border:1px solid #b9dec9}.feedback.bad{background:var(--danger-lt);color:var(--danger);border:1px solid #e8bdbd}.feedback strong{font-size:16px}.actions{display:flex;gap:8px;justify-content:space-between;align-items:center}.actions .btnG{flex:1}
 .endHero{text-align:center;padding:6px 0 18px}.endScore{font-size:clamp(58px,13vw,82px);font-weight:800;color:var(--primary);letter-spacing:-3px}.endLabel{font-size:13px;color:var(--soft);font-weight:650}.endStats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.weakList{display:flex;flex-wrap:wrap;gap:8px}.weakChip{border:1px solid var(--border);border-radius:10px;background:#fff;padding:8px 10px;font-size:12px;font-weight:750;color:var(--soft)}.weakChip strong{color:var(--text)}
 @media(max-width:620px){body{padding:16px 12px calc(45px + env(safe-area-inset-bottom,0px))}.answerPanel{position:sticky;bottom:env(safe-area-inset-bottom,0px);z-index:6;background:#fff}.answerInput{font-size:22px;min-height:58px}.durGrid{grid-template-columns:repeat(3,1fr)}.gameTop{grid-template-columns:1fr auto}.scoreMini{grid-column:1/-1;text-align:right}.qCard{min-height:220px;padding:26px 18px}.endStats{grid-template-columns:repeat(2,1fr)}}@media(max-width:400px){.choiceGrid{grid-template-columns:1fr}.durGrid{grid-template-columns:repeat(2,1fr)}.keyboardRow{flex-direction:column}.validateBtn{padding:14px}}
+.opMatrixWrap{overflow-x:auto;margin:12px 0;overscroll-behavior-x:contain}.opMatrix{width:100%;min-width:490px;border-spacing:5px}.opMatrix th{font-size:12px;color:var(--soft);font-weight:800;text-align:center}.opMatrix th[scope="row"]{width:25px}.opChoice{width:100%;min-height:44px;border:1.5px solid var(--border);border-radius:9px;background:#fff;color:var(--soft);font:700 12px 'Inter',sans-serif;cursor:pointer;white-space:nowrap}.opChoice.active{background:var(--primary-lt);border-color:var(--primary);color:var(--text)}.opChoice:hover{border-color:var(--primary)}.opChoice:focus-visible{outline:3px solid var(--primary);outline-offset:2px}.opSelectionActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.selectionCount{margin-top:10px;font-size:12px;line-height:1.6;color:var(--soft)}.btnP:disabled{opacity:.45;cursor:not-allowed;transform:none}.calculationClock{margin-top:12px;font-size:13px;font-weight:750;color:var(--primary);font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -2949,6 +2950,15 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
   </div>
 
   <div class="panel">
+    <div class="pt">🎯 Multiplications à travailler</div>
+    <p class="small">Clique sur chaque multiplication pour la sélectionner ou la retirer. Les cases colorées sont sélectionnées. L’ordre compte : 7 × 8 et 8 × 7 se choisissent séparément.</p>
+    <div class="opSelectionActions"><button class="btnG" type="button" onclick="selectAllOperations(true)">Tout sélectionner</button><button class="btnG" type="button" onclick="selectAllOperations(false)">Tout retirer</button></div>
+    <div class="opMatrixWrap" id="operationPicker"></div>
+    <p class="small">Sur petit écran, fais défiler la grille horizontalement si nécessaire.</p>
+    <p class="selectionCount" id="selectionCount" role="status" aria-live="polite"></p>
+  </div>
+
+  <div class="panel">
     <div class="pt">⌨️ Réponse au clavier ou par dictée</div>
     <div class="supportNote">Tape le résultat ou utilise la dictée vocale de ton téléphone (micro du clavier). La reconnaissance vocale propre à l'application a été supprimée. Attends la transcription complète, puis valide avec Entrée/OK ou le bouton.</div>
   </div>
@@ -2960,7 +2970,7 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
       <button class="choiceBtn" data-mode="spoken" id="spokenBtn">🔊 Prononcée</button>
       <button class="choiceBtn" data-mode="both" id="bothBtn">👁️ + 🔊 Les deux</button>
     </div>
-    <div class="supportNote" id="speechSupport">En mode prononcé, l'énoncé est lu en français avant que le chronomètre de réponse ne démarre.</div>
+    <div class="supportNote" id="speechSupport">Le chronomètre de séance tourne en continu. En mode vocal, le temps de chaque calcul commence au début de l’annonce et inclut sa lecture.</div>
   </div>
 
   <div class="panel">
@@ -2973,7 +2983,7 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
     <div style="margin-top:10px;text-align:right"><button class="btnO" onclick="resetProgress()">Réinitialiser la progression</button></div>
   </div>
 
-  <button class="btnP" onclick="startSession()">▶ Lancer la session</button>
+  <button class="btnP" id="startTimesButton" onclick="startSession()">▶ Lancer la session</button>
 </div>
 
 <div class="screen" id="sGame">
@@ -2987,6 +2997,7 @@ el('answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')validateFree
     <div class="question" id="questionText">7 × 8</div>
     <div class="listenPrompt" id="listenPrompt"><div class="speaker">🔊</div><div class="listenText">Écoute la multiplication…</div></div>
     <div class="subPrompt" id="subPrompt"></div>
+    <div class="calculationClock" id="calculationClock" aria-live="off">Temps du calcul : —</div>
   </div>
 
   <div class="answerPanel">
@@ -3029,10 +3040,11 @@ const STORAGE_KEY='multiplicationTrainer_v1';
 const CONFIG_KEY='multiplicationTrainerConfig_v1';
 const hasSynthesis='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
 const DICTATION_GRACE_MS=650;
-let cfg={duration:120,promptMode:'display'};
+let cfg={duration:120,promptMode:'display',selectedOps:allOps().map(o=>o.key)};
 let progress=loadProgress();
-let timer=null,timeLeft=0,totalTime=0,active=false,locked=false,questionReady=false;
-let current=null,lastKey='',questionStartedAt=0,questionToken=0;
+let timer=null,timeLeft=0,totalTime=0,sessionDeadline=0,active=false,locked=false,questionReady=false;
+let current=null,lastKey='',questionStartedAt=null,questionPresentedAt=0,questionToken=0,lastResponseMs=null;
+let sessionOps=[];
 let correct=0,attempts=0,totalResponseMs=0,bestResponseMs=null;
 let sessionByKey={};
 
@@ -3041,10 +3053,40 @@ function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.re
 function loadProgress(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch(e){return {}}}
 function saveProgress(){localStorage.setItem(STORAGE_KEY,JSON.stringify(progress))}
 function saveConfig(){localStorage.setItem(CONFIG_KEY,JSON.stringify(cfg))}
-function loadConfig(){try{const x=JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}');if([60,120,180,300,600].includes(Number(x.duration)))cfg.duration=Number(x.duration);if(['display','spoken','both'].includes(x.promptMode))cfg.promptMode=x.promptMode}catch(e){}}
+function loadConfig(){
+  try{
+    const x=JSON.parse(localStorage.getItem(CONFIG_KEY)||'{}');
+    if([60,120,180,300,600].includes(Number(x.duration)))cfg.duration=Number(x.duration);
+    if(['display','spoken','both'].includes(x.promptMode))cfg.promptMode=x.promptMode;
+    if(Array.isArray(x.selectedOps)){
+      const valid=new Set(allOps().map(o=>o.key));
+      cfg.selectedOps=[...new Set(x.selectedOps.filter(k=>valid.has(k)))];
+    }
+  }catch(e){}
+}
 function opKey(a,b){return a+'x'+b}
 function statFor(key){if(!progress[key])progress[key]={seen:0,correct:0,wrong:0,totalMs:0,bestMs:null};return progress[key]}
 function allOps(){const a=[];for(let x=2;x<=9;x++)for(let y=2;y<=9;y++)a.push({a:x,b:y,key:opKey(x,y),ans:x*y});return a}
+function selectedOps(){const keys=new Set(cfg.selectedOps);return allOps().filter(o=>keys.has(o.key))}
+function updateSelectionStatus(){
+  const count=selectedOps().length;
+  $('selectionCount').textContent=count+' / 64 multiplications sélectionnées.'+(count?'':' Choisis au moins une multiplication pour lancer la séance.');
+  $('startTimesButton').disabled=count===0;
+}
+function renderOperationSelection(){
+  const keys=new Set(cfg.selectedOps),numbers=[2,3,4,5,6,7,8,9];
+  $('operationPicker').innerHTML='<table class="opMatrix" aria-label="Sélection des multiplications de 2 à 9"><thead><tr><th scope="col">×</th>'+numbers.map(b=>'<th scope="col">'+b+'</th>').join('')+'</tr></thead><tbody>'+numbers.map(a=>'<tr><th scope="row">'+a+'</th>'+numbers.map(b=>{const key=opKey(a,b),on=keys.has(key);return '<td><button type="button" class="opChoice'+(on?' active':'')+'" data-op="'+key+'" aria-label="'+a+' fois '+b+'" aria-pressed="'+on+'" onclick="toggleOperation(\''+key+'\',this)">'+a+' × '+b+'</button></td>'}).join('')+'</tr>').join('')+'</tbody></table>';
+  updateSelectionStatus();
+}
+function toggleOperation(key,button){
+  if(!allOps().some(o=>o.key===key))return;
+  const keys=new Set(cfg.selectedOps);
+  if(keys.has(key))keys.delete(key);else keys.add(key);
+  cfg.selectedOps=[...keys];saveConfig();
+  if(button){const on=keys.has(key);button.classList.toggle('active',on);button.setAttribute('aria-pressed',String(on));updateSelectionStatus()}
+  else renderOperationSelection();
+}
+function selectAllOperations(on){cfg.selectedOps=on?allOps().map(o=>o.key):[];saveConfig();renderOperationSelection()}
 function fmtMs(ms){if(ms==null||!isFinite(ms))return '—';return (ms/1000).toFixed(ms<10000?1:0).replace('.',',')+' s'}
 function pct(a,b){return b?Math.round(a/b*100):0}
 function weightFor(op){
@@ -3056,7 +3098,8 @@ function weightFor(op){
   return Math.max(1,Math.min(7,w));
 }
 function chooseOp(){
-  let ops=allOps();if(lastKey&&ops.length>1)ops=ops.filter(o=>o.key!==lastKey);
+  let ops=sessionOps.length?sessionOps:selectedOps();if(!ops.length)return null;
+  if(lastKey&&ops.length>1)ops=ops.filter(o=>o.key!==lastKey);
   const weighted=ops.map(o=>({o,w:weightFor(o)}));
   const sum=weighted.reduce((t,x)=>t+x.w,0);let r=Math.random()*sum;
   for(const x of weighted){r-=x.w;if(r<=0)return x.o}
@@ -3091,9 +3134,19 @@ function focusAnswer(){
   const el=$('answerInput');
   if(document.activeElement!==el){try{el.focus({preventScroll:true})}catch(e){el.focus()}}
 }
+function startCalculationClock(token,start=performance.now()){
+  if(!active||locked||token!==questionToken||questionStartedAt!==null)return;
+  questionStartedAt=start;updateCalculationClock();
+}
+function updateCalculationClock(){
+  if(!current){$('calculationClock').textContent='Temps du calcul : —';return}
+  if(locked&&lastResponseMs!==null){$('calculationClock').textContent='Temps du calcul : '+fmtMs(lastResponseMs);return}
+  $('calculationClock').textContent=questionStartedAt===null?'En attente du début de l’annonce…':'Temps du calcul : '+fmtMs(Math.max(0,performance.now()-questionStartedAt));
+}
 function afterPrompt(token){
   if(!active||locked||token!==questionToken)return;
-  questionReady=true;questionStartedAt=performance.now();
+  startCalculationClock(token,questionPresentedAt);
+  questionReady=true;
   $('subPrompt').textContent='À toi : dicte ou saisis le résultat, puis valide.';
   focusAnswer();
 }
@@ -3102,10 +3155,12 @@ function speakPrompt(token){
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(numberToFrench(current.a)+' fois '+numberToFrench(current.b));
   u.lang='fr-FR';u.rate=1.06;u.pitch=1;
+  u.onstart=()=>startCalculationClock(token);
   let finished=false;
   const done=()=>{
     if(finished)return;finished=true;
-    if(token!==questionToken)return;
+    if(!active||locked||token!==questionToken)return;
+    startCalculationClock(token,questionPresentedAt);
     $('subPrompt').textContent='Énoncé terminé — prépare ta réponse…';
     setTimeout(()=>afterPrompt(token),DICTATION_GRACE_MS);
   };
@@ -3114,22 +3169,27 @@ function speakPrompt(token){
   setTimeout(done,5200); // Sécurité si le navigateur ne déclenche aucun événement.
 }
 function renderQuestion(){
+  if(!active)return;
+  tick();if(!active)return;
   locked=false;questionReady=false;questionToken++;
+  questionPresentedAt=performance.now();questionStartedAt=null;lastResponseMs=null;
   if(hasSynthesis)speechSynthesis.cancel();
   const token=questionToken;
-  current=chooseOp();lastKey=current.key;
+  current=chooseOp();if(!current){endSession();return}lastKey=current.key;
   $('feedback').className='feedback';$('feedback').textContent='';
   $('answerInput').value='';$('answerInput').classList.remove('invalid');
   $('questionText').style.display=(cfg.promptMode==='display'||cfg.promptMode==='both')?'block':'none';
   $('listenPrompt').classList.toggle('show',cfg.promptMode==='spoken');
   $('questionText').textContent=current.a+' × '+current.b;
-  $('subPrompt').textContent=cfg.promptMode==='display'?'Dicte ou écris ta réponse.':'Écoute, puis réponds ; le temps est suspendu pendant la lecture.';
+  $('subPrompt').textContent=cfg.promptMode==='display'?'Dicte ou écris ta réponse.':'Écoute, puis réponds. Le temps du calcul inclut la lecture.';
+  updateCalculationClock();
   // Ne pas désactiver, recréer ou remplacer l'input : garde le clavier mobile ouvert.
   focusAnswer();
   if(cfg.promptMode==='spoken'||cfg.promptMode==='both')speakPrompt(token);else afterPrompt(token);
 }
 function validateKeyboard(){
   if(!active||locked||!current)return;
+  tick();if(!active)return;
   const raw=$('answerInput').value.trim();
   if(!raw)return;
   const val=parseTextNumber(raw);
@@ -3137,11 +3197,10 @@ function validateKeyboard(){
     $('inputNote').textContent='Transcription non reconnue : vérifie le texte complet (ex. « cinquante-six ») avant de valider. Aucune erreur comptée.';
     focusAnswer();return;
   }
-  if(!questionReady){
-    // L'utilisateur peut avoir saisi plus vite que la voix synthétique : sa
-    // réponse est acceptée, sans lui attribuer un faux délai de réaction.
-    questionStartedAt=performance.now();questionReady=true;
-  }
+  // Si la voix ne fournit pas onstart, ou si la réponse la devance, utiliser
+  // l’apparition du calcul comme repère ; ne jamais repartir à zéro ici.
+  startCalculationClock(questionToken,questionPresentedAt);
+  questionReady=true;
   validateAnswer(val,raw);
 }
 function submitTimes(e){e.preventDefault();validateKeyboard();focusAnswer();return false}
@@ -3149,7 +3208,8 @@ function validateAnswer(value,raw){
   if(!active||locked||!current)return;
   locked=true;questionReady=false;
   if(hasSynthesis)speechSynthesis.cancel();
-  const elapsed=Math.max(0,performance.now()-questionStartedAt);
+  const elapsed=Math.max(0,performance.now()-(questionStartedAt??questionPresentedAt));
+  lastResponseMs=elapsed;
   attempts++;totalResponseMs+=elapsed;
   if(bestResponseMs===null||elapsed<bestResponseMs)bestResponseMs=elapsed;
   const ok=value===current.ans;if(ok)correct++;
@@ -3161,26 +3221,34 @@ function validateAnswer(value,raw){
   f.innerHTML=(ok?'<strong>✓ Correct : ':'<strong>✗ ')+current.a+' × '+current.b+' = '+current.ans+'</strong><br>'+
     (ok?'Réponse en '+fmtMs(elapsed)+'.':'Ta réponse : '+escapeHtml(raw)+'.');
   updateHud();updateMenuStats();
-  setTimeout(()=>{if(active&&timeLeft>0)renderQuestion()},ok?520:850);
+  const answeredToken=questionToken;
+  setTimeout(()=>{if(active&&answeredToken===questionToken)renderQuestion()},ok?520:850);
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function tick(){
-  if(!active||!questionReady)return;
-  timeLeft--;updateHud();if(timeLeft<=0)endSession();
+  if(!active)return;
+  timeLeft=Math.max(0,Math.ceil((sessionDeadline-performance.now())/1000));
+  updateHud();if(timeLeft<=0)endSession();
 }
 function updateHud(){
   const m=Math.floor(Math.max(0,timeLeft)/60),s=String(Math.max(0,timeLeft)%60).padStart(2,'0');
   $('clock').textContent=m+':'+s;
   $('scoreMini').textContent=correct+' / '+attempts;
   $('timerFill').style.width=(totalTime?Math.max(0,timeLeft)/totalTime*100:0)+'%';
+  updateCalculationClock();
 }
 function startSession(){
+  sessionOps=selectedOps();
+  if(!sessionOps.length){updateSelectionStatus();return}
+  // Invalider les événements vocaux de la séance précédente avant cancel().
+  active=false;questionToken++;
   if(hasSynthesis)speechSynthesis.cancel();clearInterval(timer);
   correct=0;attempts=0;totalResponseMs=0;bestResponseMs=null;sessionByKey={};lastKey='';
-  timeLeft=cfg.duration;totalTime=cfg.duration;active=true;locked=false;questionReady=false;
+  timeLeft=cfg.duration;totalTime=cfg.duration;sessionDeadline=performance.now()+cfg.duration*1000;active=true;locked=false;questionReady=false;
+  current=null;questionStartedAt=null;lastResponseMs=null;
   show('sGame');updateHud();
   // Focus immédiat dans le geste utilisateur : primordial pour le clavier iOS/Android.
-  focusAnswer();renderQuestion();timer=setInterval(tick,1000);
+  focusAnswer();renderQuestion();timer=setInterval(tick,100);
 }
 function endSession(){
   if(!active&&$('sEnd').classList.contains('active'))return;
@@ -3196,7 +3264,7 @@ function endSession(){
 }
 function renderWeak(){
   let arr=Object.values(sessionByKey).filter(x=>x.wrong>0).sort((a,b)=>b.wrong-a.wrong||a.correct-b.correct);
-  if(!arr.length){arr=allOps().map(o=>{const s=progress[o.key];return s&&s.seen?{a:o.a,b:o.b,wrong:s.wrong,correct:s.correct,seen:s.seen,acc:s.correct/s.seen}:null}).filter(Boolean).sort((a,b)=>(a.acc??(a.correct/a.seen))-(b.acc??(b.correct/b.seen))).slice(0,6)}else arr=arr.slice(0,8);
+  if(!arr.length){arr=(sessionOps.length?sessionOps:selectedOps()).map(o=>{const s=progress[o.key];return s&&s.seen?{a:o.a,b:o.b,wrong:s.wrong,correct:s.correct,seen:s.seen,acc:s.correct/s.seen}:null}).filter(Boolean).sort((a,b)=>(a.acc??(a.correct/a.seen))-(b.acc??(b.correct/b.seen))).slice(0,6)}else arr=arr.slice(0,8);
   $('weakList').innerHTML=arr.length?arr.map(x=>'<span class="weakChip"><strong>'+x.a+' × '+x.b+'</strong> · '+(x.seen?pct(x.correct,x.seen):pct(x.correct,x.correct+x.wrong))+'%</span>').join(''):'<span class="small">Aucune faiblesse détectée pendant cette session.</span>';
 }
 function goMenu(){
@@ -3212,6 +3280,7 @@ function resetProgress(){if(!confirm('Réinitialiser toutes les statistiques des
 function applyConfigUI(){
   document.querySelectorAll('#durGrid .durBtn').forEach(b=>b.classList.toggle('active',Number(b.dataset.v)===cfg.duration));
   document.querySelectorAll('#promptModeGrid .choiceBtn').forEach(b=>b.classList.toggle('active',b.dataset.mode===cfg.promptMode));
+  renderOperationSelection();
 }
 function bindMenus(){
   document.querySelectorAll('#durGrid .durBtn').forEach(b=>b.addEventListener('click',()=>{cfg.duration=Number(b.dataset.v);applyConfigUI();saveConfig()}));
