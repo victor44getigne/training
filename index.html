@@ -525,6 +525,8 @@ var timer=null, timeLeft=0, totalTime=0;
 var score=0, totalQ=0, streak=0;
 var curAns=null, curQ='', curDec=0, curAnsDisplayDec=2;
 var isPaused=false, saved=false, hlRow=-1;
+var mathActive=false, answerLocked=false, questionVersion=0, feedbackTimer=null;
+var currentMathQuestion=null;
 var wrongLog=[];
 var approxLog=[];
 var lvMax={1:10,2:50,3:100,4:999,5:9999};
@@ -590,6 +592,35 @@ function fmtFlex(n,maxDec){
   return fixed.replace('.',',');
 }
 function clamp(n,mn,mx){return Math.max(mn,Math.min(mx,n));}
+// Les nombres affichés sont convertis en unités entières (ex. 8,20 -> 820).
+// Les bornes de ce module restent largement sous Number.MAX_SAFE_INTEGER.
+function decimalUnits(n,d){return Number(Number(n).toFixed(d).replace('.',''))}
+function standardExpected(a,da,b,db,op,d){
+  var sa=Math.pow(10,da),sb=Math.pow(10,db),out=Math.pow(10,d);
+  var ai=decimalUnits(a,da),bi=decimalUnits(b,db);
+  if(op==='add')return Math.round((ai*sb+bi*sa)*out/(sa*sb))/out;
+  if(op==='sub')return Math.round((ai*sb-bi*sa)*out/(sa*sb))/out;
+  if(op==='mul')return Math.round(ai*bi*out/(sa*sb))/out;
+  // Conserver la règle existante de division : quotient tronqué au centième,
+  // mais sans tronquer un produit flottant tel que 16.4 * 100.
+  if(op==='div')return Math.floor(ai*sb*out/(bi*sa))/out;
+  throw new Error('Opération non reconnue');
+}
+function rememberMathQuestion(){
+  currentMathQuestion=Object.freeze({q:curQ,answer:curAns,dec:curDec,displayDec:curAnsDisplayDec,mode:cfg.mode,version:questionVersion});
+}
+function cancelMathFeedback(){clearTimeout(feedbackTimer);feedbackTimer=null}
+function queueMathNext(delay){
+  cancelMathFeedback();
+  var version=questionVersion;
+  feedbackTimer=setTimeout(function(){
+    feedbackTimer=null;
+    if(!mathActive||version!==questionVersion||isPaused)return;
+    document.getElementById('flashEl').className='flash';
+    resetInp();
+    if(timeLeft>0){newQ();focusInp();}
+  },delay);
+}
 function syncModeUI(){
   var isApprox=cfg.mode==='approx';
   document.body.dataset.theme=isApprox?'approx':'standard';
@@ -630,11 +661,13 @@ function newApproxQ(){
     ' <span class="op">÷</span> ' +
     fmt(b,d) +
     ' <span class="eq">≈</span>';
+  rememberMathQuestion();
 }
 
 /* ── QUESTION ── */
 function newQ(){
-
+  cancelMathFeedback();answerLocked=false;questionVersion++;
+  document.getElementById('flashEl').className='flash';
   if(cfg.mode==='approx'){
     newApproxQ();
     return;
@@ -708,7 +741,7 @@ function newQ(){
       // diviseur
       b = rnd(1, Math.min(12,mx), dB);
 
-      // résultat cible EXACT à 2 décimales
+      // résultat cible avant l’arrondi du dividende affiché
       var res = Math.floor(rnd(1,30,4) * 100) / 100;
 
       // dividende exact
@@ -718,7 +751,7 @@ function newQ(){
       a = rd(a, dA);
 
       // réponse attendue
-      ans = Math.floor((a / b) * 100) / 100;
+      // La réponse est calculée ci-dessous à partir des opérandes affichés.
 
       sym = '÷';
 
@@ -731,8 +764,8 @@ function newQ(){
   var da = op === 'div' ? displayDA : d;
   var db = op === 'div' ? displayDB : d;
 
-  curAns = ans;
   curAnsDisplayDec=op==='div'?2:d;
+  curAns = standardExpected(a,da,b,db,op,curAnsDisplayDec);
 
   curQ = fmt(a, da) + ' ' + sym + ' ' + fmt(b, db);
 
@@ -741,6 +774,7 @@ function newQ(){
     ' <span class="op">' + sym + '</span> ' +
     fmt(b, db) +
     ' <span class="eq">=</span>';
+  rememberMathQuestion();
 }
 
 /* ── GAME ── */
@@ -748,6 +782,8 @@ function startGame(){
   if(cfg.mode!=='approx' && !Object.values(cfg.ops).some(Boolean)){
     document.getElementById('opsErr').classList.add('show'); return;
   }
+  cancelMathFeedback();questionVersion++;mathActive=true;answerLocked=false;isPaused=false;
+  document.getElementById('pov').classList.remove('on');
   score=0;totalQ=0;streak=0;
   timeLeft=cfg.duration;totalTime=cfg.duration;
   saved=false;hlRow=-1;wrongLog=[];approxLog=[];
@@ -758,7 +794,7 @@ function startGame(){
   timer=setInterval(tick,1000);
 }
 function tick(){
-  if(isPaused)return;
+  if(!mathActive||isPaused)return;
   timeLeft--;updateBar();updateHUD();
   if(timeLeft<=0)endGame();
 }
@@ -787,74 +823,53 @@ function onKey(e){
 }
 function submitMath(e){e.preventDefault();validate();focusInp();return false;}
 function validate(){
-  var raw=document.getElementById('ansInp').value.replace(',','.').trim();
+  if(!mathActive||answerLocked||isPaused||!currentMathQuestion)return;
+  var given=document.getElementById('ansInp').value.trim();
+  var raw=given.replace(',','.');
   if(raw==='')return;
   var parsed=Number(raw);
   if(!Number.isFinite(parsed))return;
-
-  var inp=document.getElementById('ansInp');
-  var fl=document.getElementById('flashEl');
-
-  if(cfg.mode==='approx'){
+  var question=currentMathQuestion;
+  answerLocked=true;
+  var inp=document.getElementById('ansInp'),fl=document.getElementById('flashEl');
+  if(question.mode==='approx'){
     var v=parsed;
     totalQ++;
-    var absErr=Math.abs(v-curAns);
-    var pctErr=curAns!==0 ? (absErr/Math.abs(curAns))*100 : 0;
+    var absErr=Math.abs(v-question.answer);
+    var pctErr=question.answer!==0?(absErr/Math.abs(question.answer))*100:0;
     var precision=clamp(100-pctErr,0,100);
-    approxLog.push({
-      q:curQ,
-      given:v,
-      correct:curAns,
-      absErr:absErr,
-      pctErr:pctErr,
-      precision:precision,
-      skipped:false
-    });
+    approxLog.push({q:question.q,given:v,givenRaw:given,correct:question.answer,absErr:absErr,pctErr:pctErr,precision:precision,skipped:false});
     streak=Math.min(streak+1,5);
     inp.classList.add(precision>=90?'ok':'bad');
     fl.textContent='≈ Précision : '+fmtFlex(precision,1)+'%';
     fl.className=precision>=90?'flash ok show':'flash bad show';
-    updateStreak();updateHUD();
-    setTimeout(function(){
-      fl.className='flash';inp.classList.remove('ok','bad');
-      resetInp();
-      if(timeLeft>0){newQ();focusInp();}
-    },520);
-    return;
+    updateStreak();updateHUD();queueMathNext(520);return;
   }
-
-  var v = Math.floor(parsed * 100) / 100;
+  // Comparer la saisie telle quelle : aucune troncature au centième.
+  var v=parsed;
   totalQ++;
-  var tol;
-    if(curQ.includes('÷')) {
-      tol = 0.005; // tolérance fixe 2 décimales
-    }else {
-      tol = curDec>0 ? Math.pow(10,-curDec)*0.5001 : 0.0001;
-    }
-  var ok=Math.abs(v-curAns)<=tol;
+  var tol=question.q.includes('÷')?0.005:question.dec>0?Math.pow(10,-question.dec)*0.5001:0.0001;
+  var ok=Math.abs(v-question.answer)<=tol;
   if(ok){
     score++;streak=Math.min(streak+1,5);
     inp.classList.add('ok');fl.textContent='✓';fl.className='flash ok show';
   }else{
-    wrongLog.push({q:curQ,given:String(v).replace('.',','),correct:fmt(curAns,curAnsDisplayDec),skipped:false});
+    wrongLog.push({q:question.q,given:given,correct:fmt(question.answer,question.displayDec),skipped:false});
     streak=0;inp.classList.add('bad');
-    fl.textContent='✗  Réponse : '+fmt(curAns,curAnsDisplayDec);fl.className='flash bad show';
+    fl.textContent='✗  Réponse : '+fmt(question.answer,question.displayDec);fl.className='flash bad show';
   }
-  updateStreak();updateHUD();
-  setTimeout(function(){
-    fl.className='flash';inp.classList.remove('ok','bad');
-    resetInp();
-    if(timeLeft>0){newQ();focusInp();}
-  },420);
+  updateStreak();updateHUD();queueMathNext(420);
 }
 function skipQ(){
-  if(cfg.mode==='approx'){
+  if(!mathActive||answerLocked||isPaused||!currentMathQuestion)return;
+  var question=currentMathQuestion;
+  answerLocked=true;
+  if(question.mode==='approx'){
     totalQ++;
-    approxLog.push({q:curQ,given:'—',correct:curAns,absErr:Math.abs(curAns),pctErr:100,precision:0,skipped:true});
-    streak=0;updateStreak();updateHUD();newQ();resetInp();focusInp();
-    return;
+    approxLog.push({q:question.q,given:'—',correct:question.answer,absErr:Math.abs(question.answer),pctErr:100,precision:0,skipped:true});
+    streak=0;updateStreak();updateHUD();newQ();resetInp();focusInp();return;
   }
-  wrongLog.push({q:curQ,given:'—',correct:fmt(curAns,curAnsDisplayDec),skipped:true});
+  wrongLog.push({q:question.q,given:'—',correct:fmt(question.answer,question.displayDec),skipped:true});
   streak=0;updateStreak();newQ();resetInp();focusInp();
 }
 function updateStreak(){
@@ -871,11 +886,12 @@ function focusInp(){
 
 /* ── PAUSE ── */
 function pauseGame(){isPaused=true;document.getElementById('pov').classList.add('on');}
-function resumeGame(){isPaused=false;document.getElementById('pov').classList.remove('on');focusInp();}
+function resumeGame(){isPaused=false;document.getElementById('pov').classList.remove('on');if(answerLocked&&feedbackTimer===null&&mathActive)queueMathNext(0);focusInp();}
 function quitToEnd(){clearInterval(timer);isPaused=false;document.getElementById('pov').classList.remove('on');endGame();}
 
 /* ── END ── */
 function endGame(){
+  mathActive=false;answerLocked=true;questionVersion++;cancelMathFeedback();
   clearInterval(timer);
   isPaused=false;
   document.getElementById('pov').classList.remove('on');
@@ -1015,6 +1031,7 @@ function showS(id){
   window.scrollTo(0,0);
 }
 function goMenu(){
+  mathActive=false;answerLocked=true;questionVersion++;cancelMathFeedback();
   clearInterval(timer);isPaused=false;
   document.getElementById('pov').classList.remove('on');
   showS('sMenu');
