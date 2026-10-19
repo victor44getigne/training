@@ -142,7 +142,7 @@ body[data-theme] .backBtn:hover{border-color:var(--primary);color:var(--primary)
     <div class="appTitle" id="appTitle">Entraînement</div>
     <div style="width:170px"></div>
   </div>
-  <iframe id="appFrame" title="Entraînement sélectionné" allow="fullscreen" allowfullscreen></iframe>
+  <iframe id="appFrame" title="Entraînement sélectionné" allow="fullscreen; screen-wake-lock" allowfullscreen></iframe>
 </section>
 
 <template id="tplMath">
@@ -1383,6 +1383,7 @@ body{
 :root{--bg:#f8f4f5;--panel:#fffdfb;--border:#e7dcdf;--primary:#a77a8b;--primary-hover:#8e6575;--primary-light:#f1e3e8;--text:#332b2e;--text-soft:#76696e;--shadow:0 4px 14px rgba(103,72,84,.07)}
 body{background:linear-gradient(180deg,#f8f4f5,#faf7f3)}
 .panel{background:rgba(255,253,251,.97)}
+.keepAwakeOption{display:flex;align-items:center;gap:10px;line-height:1.5;font-size:15px;cursor:pointer}.keepAwakeOption input{width:20px;height:20px;flex:none;accent-color:var(--primary)}.keepAwakeNote,.keepAwakeStatus{color:var(--text-soft);font-size:13px;line-height:1.5;margin-top:10px}.keepAwakeStatus{text-align:center;min-height:20px}.answerRule:empty{display:none}.answerRule{margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -1426,6 +1427,10 @@ body{background:linear-gradient(180deg,#f8f4f5,#faf7f3)}
 </select>
 </div>
 
+<div class="panel">
+<label class="keepAwakeOption"><input id="keepAwakeEnabled" type="checkbox" checked> Garder l’écran allumé pendant la session</label>
+<p class="keepAwakeNote" id="wakeLockSetupNote"></p>
+</div>
 <button class="btn" onclick="start()">Commencer</button>
 
 </div>
@@ -1457,6 +1462,7 @@ body{background:linear-gradient(180deg,#f8f4f5,#faf7f3)}
 <button class="btn secondary" onclick="goBack()">Retour menu</button>
 </div>
 <div class="statusLine" id="statusLine"></div>
+<div class="keepAwakeStatus" id="wakeLockStatus" role="status" aria-live="polite"></div>
 
 </div>
 
@@ -1465,7 +1471,8 @@ body{background:linear-gradient(180deg,#f8f4f5,#faf7f3)}
 
 <div class="logo" style="font-size:32px">Somme finale</div>
 
-<input class="input" id="answerInput" type="number" placeholder="?">
+<input class="input" id="answerInput" type="number" inputmode="numeric" placeholder="?">
+<p class="keepAwakeNote answerRule" id="answerRule"></p>
 
 <button class="btn" onclick="check()">Valider</button>
 
@@ -1496,6 +1503,7 @@ let remainingMs=0
 let gameInterval=null
 let cycleTimeout=null
 let hideTimeout=null
+let answerFocusTimeout=null
 let lastTick=0
 let isPaused=false
 let phase="idle"
@@ -1533,6 +1541,7 @@ function safeNumber(value, fallback){
 
 function start(){
   clearAllTimers()
+  releaseMemoryWakeLock()
 
   cfg={
     duration:safeNumber(el('durationMin').value,1)*60,
@@ -1553,6 +1562,7 @@ function start(){
   phaseRemaining=0
 
   el('answerInput').value=""
+  el('answerRule').textContent=""
   el('number').textContent=""
   el('number').className="numberDisplay"
   el('pauseBtn').textContent="Pause"
@@ -1562,12 +1572,15 @@ function start(){
   updateHud()
   startClock()
   scheduleNumber(0)
+  requestMemoryWakeLock()
 }
 
 function clearAllTimers(){
   clearInterval(gameInterval)
   clearTimeout(cycleTimeout)
   clearTimeout(hideTimeout)
+  clearTimeout(answerFocusTimeout)
+  answerFocusTimeout=null
   gameInterval=null
   cycleTimeout=null
   hideTimeout=null
@@ -1578,9 +1591,7 @@ function startClock(){
   clearInterval(gameInterval)
   gameInterval=setInterval(()=>{
     if(isPaused) return
-    const now=Date.now()
-    remainingMs-=now-lastTick
-    lastTick=now
+    settleMemoryClock()
     if(remainingMs<=0){
       remainingMs=0
       updateHud()
@@ -1591,6 +1602,26 @@ function startClock(){
   },100)
 }
 
+// Actualiser aussi aux transitions pour ne pas montrer un nouveau nombre après l’échéance.
+function settleMemoryClock(){
+  const now=Date.now()
+  remainingMs=Math.max(0,remainingMs-Math.max(0,now-lastTick))
+  lastTick=now
+}
+
+function memoryCanContinue(){
+  if(isPaused || !memorySessionActive())return false
+  settleMemoryClock()
+  if(remainingMs<=0){finish(false);return false}
+  return true
+}
+
+function hideNumber(){
+  if(!memoryCanContinue())return
+  el('number').textContent=""
+  scheduleNumber(cfg.gap)
+}
+
 function scheduleNumber(delay){
   phase="gap"
   nextDueAt=Date.now()+delay
@@ -1599,7 +1630,7 @@ function scheduleNumber(delay){
 }
 
 function showNumber(){
-  if(isPaused || remainingMs<=0) return
+  if(!memoryCanContinue()) return
 
   const n=randomNum()
   const entry={
@@ -1620,10 +1651,7 @@ function showNumber(){
   updateHud()
 
   clearTimeout(hideTimeout)
-  hideTimeout=setTimeout(()=>{
-    el('number').textContent=""
-    scheduleNumber(cfg.gap)
-  },cfg.show)
+  hideTimeout=setTimeout(hideNumber,cfg.show)
 }
 
 function formatClock(ms){
@@ -1649,9 +1677,12 @@ function togglePause(){
 }
 
 function pauseSession(){
-  if(isPaused || remainingMs<=0) return
+  if(isPaused || !memorySessionActive()) return
+  settleMemoryClock()
+  if(remainingMs<=0){finish(false);return}
 
   isPaused=true
+  releaseMemoryWakeLock()
   clearInterval(gameInterval)
   clearTimeout(cycleTimeout)
   clearTimeout(hideTimeout)
@@ -1674,7 +1705,7 @@ function pauseSession(){
 }
 
 function resumeSession(){
-  if(!isPaused) return
+  if(!isPaused || !memorySessionActive()) return
 
   const wasPauseText=el('number').textContent==="Pause"
   if(wasPauseText) el('number').textContent=""
@@ -1688,15 +1719,13 @@ function resumeSession(){
   if(phase==="show"){
     hideDueAt=Date.now()+phaseRemaining
     clearTimeout(hideTimeout)
-    hideTimeout=setTimeout(()=>{
-      el('number').textContent=""
-      scheduleNumber(cfg.gap)
-    },phaseRemaining)
+    hideTimeout=setTimeout(hideNumber,phaseRemaining)
   }else if(phase==="gap"){
     scheduleNumber(phaseRemaining)
   }else{
     scheduleNumber(0)
   }
+  requestMemoryWakeLock()
 }
 
 function stopSession(){
@@ -1704,57 +1733,69 @@ function stopSession(){
 }
 
 function finish(manualStop){
-  if(phase==="finished") return
+  if(!memorySessionActive()) return
 
+  // Le critère est l’affichage réel, pas l’âge du nombre : arrêt manuel ou fin du chrono.
+  const numberStillVisible=phase==="show" && lastEntry && lastEntry.included
+  if(!isPaused)settleMemoryClock()
   finishedByStop=manualStop
   clearAllTimers()
   isPaused=false
   phase="finished"
+  releaseMemoryWakeLock()
 
-  if(manualStop && lastEntry && lastEntry.included){
-    const age=Date.now()-lastEntry.shownAt
-    if(age<=5000){
-      lastEntry.included=false
-      total-=lastEntry.value
-      excludedLast=lastEntry
-    }
+  if(numberStillVisible){
+    lastEntry.included=false
+    total-=lastEntry.value
+    excludedLast=lastEntry
   }
 
   el('number').textContent=""
   el('answerInput').value=""
+  el('answerRule').textContent=excludedLast
+    ? "Le dernier nombre était encore affiché à l’arrêt : ta réponse sera acceptée avec ou sans ce nombre."
+    : ""
   updateHud()
   show("answer")
-  setTimeout(()=>el('answerInput').focus(),80)
+  answerFocusTimeout=setTimeout(()=>{answerFocusTimeout=null;if(el('answer').classList.contains('active'))el('answerInput').focus()},80)
 }
 
 function includedEntries(){
   return entries.filter(e=>e.included)
 }
 
-function calculationHtml(){
+function calculationHtml(includeLast=false){
   const inc=includedEntries()
+  if(includeLast && excludedLast)inc.push(excludedLast)
+  const displayedTotal=total+(includeLast && excludedLast ? excludedLast.value : 0)
   const expression=inc.length ? inc.map(e=>e.value).join(' + ') : 'Aucun nombre compté'
   const chips=inc.length
     ? inc.map((e,i)=>`<span class="numChip">${i+1}. ${e.value}</span>`).join('')
     : '<span class="numChip">Aucun</span>'
   const excluded=excludedLast
-    ? `<div class="discreetNote">Dernier nombre affiché juste avant l'arrêt : <strong>${excludedLast.value}</strong>. Il n'a pas été inclus dans la somme, car il est apparu moins de 5 secondes avant l'arrêt. Tu peux le prendre en compte mentalement si tu l'avais déjà retenu.</div>`
+    ? `<div class="discreetNote">Le dernier nombre, <strong>${excludedLast.value}</strong>, était encore visible à l’arrêt. Les deux réponses sont acceptées : <strong>${total}</strong> sans ce nombre, ou <strong>${total+excludedLast.value}</strong> avec ce nombre.${includeLast ? ' Le détail ci-dessus suit ta réponse avec ce dernier nombre.' : ' Le détail ci-dessus ne le compte pas.'}</div>`
     : ''
 
   return `
   <div class="detailBox">
     <div class="detailTitle">Détail du calcul</div>
-    <div class="calcLine">${expression} = <strong>${total}</strong></div>
+    <div class="calcLine">${expression} = <strong>${displayedTotal}</strong></div>
     <div class="numGrid">${chips}</div>
     ${excluded}
   </div>`
 }
 
 function check(){
+  if(phase!=="finished")return
   const raw=el('answerInput').value.trim()
   const user=raw==="" ? NaN : Number(raw)
-  const ok=user===total
+  const withLast=excludedLast ? total+excludedLast.value : null
+  const includesLast=withLast!==null && user===withLast
+  const ok=user===total || includesLast
   const sessionText=finishedByStop ? "Session arrêtée manuellement" : "Session terminée"
+  const answerText=excludedLast
+    ? `Réponses acceptées : <strong>${total}</strong> sans le dernier nombre, ou <strong>${withLast}</strong> avec.`
+    : `Bonne réponse : <strong>${total}</strong>`
 
   el('resultBox').innerHTML=ok
   ?`
@@ -1762,17 +1803,17 @@ function check(){
     <div class="resultTitle">Correct</div>
     <div class="resultText">
       ${sessionText}<br>
-      Somme exacte : <strong>${total}</strong>
+      Somme exacte : <strong>${includesLast ? withLast : total}</strong>
     </div>
   </div>
-  ${calculationHtml()}`
+  ${calculationHtml(includesLast)}`
   :`
   <div class="result wrong">
     <div class="resultTitle">Incorrect</div>
     <div class="resultText">
       ${sessionText}<br>
       Ta réponse : <strong>${Number.isNaN(user)?'—':user}</strong><br>
-      Bonne réponse : <strong>${total}</strong>
+      ${answerText}
     </div>
   </div>
   ${calculationHtml()}`
@@ -1789,6 +1830,8 @@ function goBack(){
   clearAllTimers()
   isPaused=false
   phase="idle"
+  releaseMemoryWakeLock()
+  el('answerRule').textContent=""
   el('answerInput').value=""
   el('number').textContent=""
   show("menu")
@@ -1813,6 +1856,102 @@ function syncMemorySliders(){
   if(show)el('showTimeSecValue').textContent=formatSecondsLabel(show.value)
   if(gap)el('gapTimeSecValue').textContent=formatSecondsLabel(gap.value)
 }
+
+// Écran allumé uniquement pendant une séance visible et non suspendue.
+// Une demande asynchrone devenue obsolète est libérée, même si elle aboutit après l’arrêt.
+let memoryWakeLock=null
+let memoryWakeRequest=null
+let memoryWakeGeneration=0
+
+function memorySessionActive(){
+  return phase==="show" || phase==="gap"
+}
+
+function memoryWakeSupported(){
+  return window.isSecureContext!==false && typeof navigator!=="undefined" && typeof navigator.wakeLock?.request==="function"
+}
+
+function memoryWakeWanted(){
+  return memorySessionActive() && !isPaused && remainingMs>0 && el('keepAwakeEnabled').checked && !document.hidden
+}
+
+function memoryWakeMessage(text){
+  el('wakeLockStatus').textContent=text
+}
+
+function releaseMemoryWakeLock(){
+  memoryWakeGeneration++
+  const token=memoryWakeLock
+  memoryWakeLock=null
+  if(token){
+    try{Promise.resolve(token.release()).catch(()=>{})}catch(e){}
+  }
+  memoryWakeMessage(isPaused ? "Écran allumé : suspendu pendant la pause." : "Maintien de l’écran désactivé.")
+}
+
+async function requestMemoryWakeLock(){
+  if(!memoryWakeWanted()){releaseMemoryWakeLock();return}
+  if(!memoryWakeSupported()){
+    memoryWakeMessage(window.isSecureContext===false ? "Écran allumé : ouvre l’application en HTTPS pour activer cette option." : "Maintien de l’écran indisponible dans ce navigateur.")
+    return
+  }
+  if(memoryWakeLock && !memoryWakeLock.released){memoryWakeMessage("Écran maintenu allumé pendant la session.");return}
+  if(memoryWakeRequest)return
+
+  const generation=memoryWakeGeneration
+  // Le verrou de requête est posé avant l’appel à l’API pour éviter les doublons.
+  const marker={}
+  memoryWakeRequest=marker
+  memoryWakeMessage("Activation du maintien de l’écran…")
+  try{
+    const token=await navigator.wakeLock.request("screen")
+    if(generation!==memoryWakeGeneration || !memoryWakeWanted()){
+      try{await token.release()}catch(e){}
+      return
+    }
+    if(token.released){memoryWakeMessage("Le téléphone n’a pas maintenu l’écran allumé.");return}
+    memoryWakeLock=token
+    token.addEventListener("release",()=>{
+      if(memoryWakeLock!==token)return
+      memoryWakeLock=null
+      memoryWakeMessage(memoryWakeWanted() ? "Maintien de l’écran interrompu par le téléphone." : "Maintien de l’écran désactivé.")
+    })
+    memoryWakeMessage("Écran maintenu allumé pendant la session.")
+  }catch(e){
+    if(generation===memoryWakeGeneration && memoryWakeWanted())memoryWakeMessage("Maintien de l’écran refusé par le téléphone ou le navigateur. La session continue.")
+  }finally{
+    if(memoryWakeRequest===marker)memoryWakeRequest=null
+    // Une nouvelle séance ou une reprise a pu commencer pendant l’ancienne demande.
+    if(generation!==memoryWakeGeneration && memoryWakeWanted())requestMemoryWakeLock()
+  }
+}
+
+function syncMemoryWakeAvailability(){
+  el('wakeLockSetupNote').textContent=memoryWakeSupported()
+    ? "Activé pendant l’exercice ; libéré à la pause ou à l’arrêt."
+    : "Selon ton navigateur, cette option peut nécessiter l’ouverture de l’application en HTTPS."
+}
+
+el('keepAwakeEnabled').addEventListener('change',()=>{
+  if(memoryWakeWanted())requestMemoryWakeLock();else releaseMemoryWakeLock()
+})
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    if(memorySessionActive() && !isPaused){pauseSession();el('statusLine').textContent="Page masquée : session en pause."}
+    else releaseMemoryWakeLock()
+  }else if(memoryWakeWanted())requestMemoryWakeLock()
+})
+
+window.checkpointMemoryTraining=()=>{
+  clearAllTimers()
+  isPaused=false
+  phase="idle"
+  releaseMemoryWakeLock()
+}
+window.addEventListener('pagehide',window.checkpointMemoryTraining)
+syncMemoryWakeAvailability()
+
 
 syncMemorySliders()
 </script>
@@ -4622,9 +4761,9 @@ function exportAllReportsTXT(){
 }
 
 function checkpointActiveTraining(){
-  const kind=document.body.dataset.theme;if(!['culture','vision'].includes(kind))return;
+  const kind=document.body.dataset.theme;if(!['culture','vision','memory'].includes(kind))return;
   const frame=document.getElementById('appFrame');
-  try{if(kind==='culture')frame.contentWindow?.checkpointCultureTraining?.();else frame.contentWindow?.checkpointVisionTraining?.()}catch(e){console.warn('Sauvegarde avant fermeture du module impossible',e)}
+  try{if(kind==='culture')frame.contentWindow?.checkpointCultureTraining?.();else if(kind==='vision')frame.contentWindow?.checkpointVisionTraining?.();else frame.contentWindow?.checkpointMemoryTraining?.()}catch(e){console.warn('Sauvegarde avant fermeture du module impossible',e)}
 }
 window.addEventListener('pagehide',checkpointActiveTraining);
 window.addEventListener('beforeunload',checkpointActiveTraining);
